@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gotta Coffee | Order & Chat</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="site-header"><div class="logo"><span class="blue">GOT</span><span class="green">TAC</span><span class="red">OFF</span><span class="yellow">EE</span></div>
+<p>Cold Brews, Iced Drinks & More — Delivered</p></header>
+<main class="app-shell">
+<section id="homeView" class="view active"><div class="hero-card"><h1>How can we help? ☕</h1><p>Order delivery, browse the menu, or ask a question.</p>
+<div class="home-grid"><button class="big-btn" onclick="startOrder()">🛒<span>Place an Order</span></button><button class="big-btn" onclick="showMenu()">📋<span>View Menu</span></button>
+<button class="big-btn" onclick="showInfo()">🕐<span>Delivery Info</span></button><button class="big-btn" onclick="showChat()">💬<span>Ask a Question</span></button></div></div></section>
+<section id="orderView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Order</span></div><div id="orderContent"></div></section>
+<section id="menuView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Menu</span></div><div id="menuContent"></div></section>
+<section id="infoView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Delivery</span></div><div id="infoContent"></div></section>
+<section id="chatView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Gotta Coffee Assistant</span></div>
+<div class="chat-card"><div id="chatMessages" class="chat-messages"></div><div class="quick-replies">
+<button onclick="chatQuick('What are your hours?')">Hours</button><button onclick="chatQuick('What is your delivery minimum?')">Delivery minimum</button>
+<button onclick="chatQuick('What flavors do you have?')">Flavors</button><button onclick="chatQuick('What sizes do you have?')">Sizes</button></div>
+<form id="chatForm" class="chat-form"><input id="chatInput" autocomplete="off" placeholder="Ask a question..."><button>Send</button></form></div></section>
+</main><footer>© 2026 Gotta Coffee • Delivery Monday-Friday</footer>
+
+<script src="menu.js"></script>
+<script>
+window.GOTTA_COFFEE_LIVE_MENU = null;
+</script>
+<script src="app.js"></script>
+
+<iframe
+  id="gcLiveMenuBridge"
+  title="Gotta Coffee live menu"
+  src="https://script.google.com/macros/s/AKfycbyIl-X_GHpPnWbLh3c_tGTXi9R-Lh5sagPHP5Upwo6qzTHoo_JpQYRV3-EovNrHpf3F-w/exec?action=menuBridge"
+  style="display:none;width:0;height:0;border:0"
+  aria-hidden="true">
+</iframe>
+</body></html>
