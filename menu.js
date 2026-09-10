@@ -6,11 +6,12 @@ const MENU = {
     "venmoDeliveryFee": 2.0,
     "orderCutoff": "05:00",
     "days": "Monday-Friday",
+    "orderingOpen": true,
+    "closedMessage": "Ordering is currently closed. Please check back later!",
     "areas": {
-      "Frenchville": "8:00 AM-9:00 AM",
-      "St. Agatha": "8:00 AM-9:00 AM",
-      "Madawaska": "9:30 AM-12:00 PM"
+      "Madawaska": "Available"
     },
+    "deliveryTimes": ["ASAP","9:00 AM","9:45 AM","10:30 AM","11:15 AM","12:00 PM","12:45 PM"],
     "payments": [
       "Cash",
       "Venmo"
