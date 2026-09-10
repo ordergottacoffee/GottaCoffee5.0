@@ -3,13 +3,12 @@ let cart=[],currentDrink=null,selectedOptions={milk:null,flavors:[],bottom:null,
 const $=id=>document.getElementById(id),money=n=>`$${Number(n||0).toFixed(2)}`;
 
 let LIVE_MENU_READY=false;
-let LIVE_MENU_REQUEST_ID=0;
-let LIVE_MENU_ACTIVE_FRAME=null;
-let LIVE_MENU_LOAD_PROMISE=null;
-let LIVE_MENU_LOAD_RESOLVE=null;
+let LIVE_MENU_REFRESHING=false;
+let LIVE_MENU_WAITERS=[];
+let LIVE_MENU_TIMER=null;
 let LIVE_MENU_ATTEMPT=0;
 const LIVE_MENU_MAX_ATTEMPTS=4;
-const LIVE_MENU_ATTEMPT_TIMEOUT=4500;
+const LIVE_MENU_ATTEMPT_TIMEOUT=6000;
 
 function applyLiveMenu(live){
   if(!live||typeof live!=="object")throw Error("Live menu response was empty.");
@@ -18,72 +17,15 @@ function applyLiveMenu(live){
   });
   if(live.business)MENU.business={...(MENU.business||{}),...live.business};
   LIVE_MENU_READY=true;
-  try{localStorage.setItem("gottaCoffeeLastLiveMenu",JSON.stringify({savedAt:Date.now(),menu:live}));}catch(_){ }
-  console.log("Gotta Coffee live menu loaded.",live.updatedAt||"");
-}
-
-function removeLiveMenuFrame(){
-  if(LIVE_MENU_ACTIVE_FRAME){
-    try{LIVE_MENU_ACTIVE_FRAME.remove();}catch(_){ }
-    LIVE_MENU_ACTIVE_FRAME=null;
-  }
-}
-
-function finishLiveMenuLoad(ok){
-  removeLiveMenuFrame();
-  const resolve=LIVE_MENU_LOAD_RESOLVE;
-  LIVE_MENU_LOAD_RESOLVE=null;
-  LIVE_MENU_LOAD_PROMISE=null;
-  if(resolve)resolve(ok);
-}
-
-function setLiveMenuStatus(message){
-  document.querySelectorAll("[data-live-menu-status]").forEach(el=>el.textContent=message);
-}
-
-function beginLiveMenuAttempt(requestId){
-  if(requestId!==LIVE_MENU_REQUEST_ID)return;
-  LIVE_MENU_ATTEMPT++;
-  removeLiveMenuFrame();
-
-  setLiveMenuStatus(`Checking today's menu… attempt ${LIVE_MENU_ATTEMPT} of ${LIVE_MENU_MAX_ATTEMPTS}`);
-
-  const frame=document.createElement("iframe");
-  frame.title="Gotta Coffee live menu";
-  frame.style.cssText="display:none;width:0;height:0;border:0";
-  frame.setAttribute("aria-hidden","true");
-  frame.dataset.requestId=String(requestId);
-  frame.src=CONFIG.APPS_SCRIPT_URL+"?action=menuBridge&requestId="+encodeURIComponent(requestId+"-"+LIVE_MENU_ATTEMPT)+"&_="+Date.now();
-  LIVE_MENU_ACTIVE_FRAME=frame;
-  document.body.appendChild(frame);
-
-  const attemptNumber=LIVE_MENU_ATTEMPT;
-  setTimeout(()=>{
-    if(requestId!==LIVE_MENU_REQUEST_ID || !LIVE_MENU_LOAD_PROMISE)return;
-    if(LIVE_MENU_ATTEMPT!==attemptNumber)return;
-    removeLiveMenuFrame();
-    if(LIVE_MENU_ATTEMPT<LIVE_MENU_MAX_ATTEMPTS){
-      const delay=500*LIVE_MENU_ATTEMPT;
-      setLiveMenuStatus("Google took a little too long — retrying automatically…");
-      setTimeout(()=>beginLiveMenuAttempt(requestId),delay);
-    }else{
-      console.warn("Live menu could not be loaded after automatic retries.");
-      finishLiveMenuLoad(false);
-    }
-  },LIVE_MENU_ATTEMPT_TIMEOUT);
-}
-
-function refreshLiveMenu(){
-  // If a refresh is already in progress, every caller shares it instead of
-  // creating competing Google iframes (which was causing intermittent failures).
-  if(LIVE_MENU_LOAD_PROMISE)return LIVE_MENU_LOAD_PROMISE;
-
-  LIVE_MENU_REQUEST_ID++;
+  LIVE_MENU_REFRESHING=false;
   LIVE_MENU_ATTEMPT=0;
-  const requestId=LIVE_MENU_REQUEST_ID;
-  LIVE_MENU_LOAD_PROMISE=new Promise(resolve=>{LIVE_MENU_LOAD_RESOLVE=resolve;});
-  beginLiveMenuAttempt(requestId);
-  return LIVE_MENU_LOAD_PROMISE;
+  if(LIVE_MENU_TIMER){clearTimeout(LIVE_MENU_TIMER);LIVE_MENU_TIMER=null;}
+  try{localStorage.setItem("gottaCoffeeLastLiveMenu",JSON.stringify({savedAt:Date.now(),menu:live}));}catch(_){ }
+  const waiters=[...LIVE_MENU_WAITERS];
+  LIVE_MENU_WAITERS=[];
+  waiters.forEach(fn=>{try{fn(true)}catch(err){console.error(err)}});
+  setLiveMenuStatus("Today's menu is ready.");
+  console.log("Gotta Coffee live menu loaded.",live.updatedAt||"");
 }
 
 function useMenuResponse(response){
@@ -98,21 +40,80 @@ function useMenuResponse(response){
   return false;
 }
 
-// Prefetch once when the page opens. If a customer taps Order while this is
-// still loading, startOrder() simply waits for the same request.
+function setLiveMenuStatus(message){
+  document.querySelectorAll("[data-live-menu-status]").forEach(el=>el.textContent=message);
+}
+
+function finishLiveMenuFailure(){
+  LIVE_MENU_REFRESHING=false;
+  if(LIVE_MENU_TIMER){clearTimeout(LIVE_MENU_TIMER);LIVE_MENU_TIMER=null;}
+  const waiters=[...LIVE_MENU_WAITERS];
+  LIVE_MENU_WAITERS=[];
+  waiters.forEach(fn=>{try{fn(false)}catch(err){console.error(err)}});
+}
+
+function runLiveMenuAttempt(){
+  const frame=$("gcLiveMenuBridge");
+  if(!frame){
+    console.error("Live menu bridge iframe is missing.");
+    finishLiveMenuFailure();
+    return;
+  }
+
+  LIVE_MENU_ATTEMPT++;
+  setLiveMenuStatus(`Checking today's menu… attempt ${LIVE_MENU_ATTEMPT} of ${LIVE_MENU_MAX_ATTEMPTS}`);
+
+  // Keep the same proven hidden iframe that worked before. We only refresh its URL.
+  frame.src=CONFIG.APPS_SCRIPT_URL+"?action=menuBridge&_="+Date.now();
+
+  if(LIVE_MENU_TIMER)clearTimeout(LIVE_MENU_TIMER);
+  const thisAttempt=LIVE_MENU_ATTEMPT;
+  LIVE_MENU_TIMER=setTimeout(()=>{
+    if(!LIVE_MENU_REFRESHING || LIVE_MENU_READY)return;
+    if(thisAttempt!==LIVE_MENU_ATTEMPT)return;
+    if(LIVE_MENU_ATTEMPT<LIVE_MENU_MAX_ATTEMPTS){
+      setLiveMenuStatus("Google took a little too long — retrying automatically…");
+      setTimeout(()=>{
+        if(LIVE_MENU_REFRESHING && !LIVE_MENU_READY)runLiveMenuAttempt();
+      },700);
+    }else{
+      console.warn("Fresh live menu did not arrive after automatic retries.");
+      finishLiveMenuFailure();
+    }
+  },LIVE_MENU_ATTEMPT_TIMEOUT);
+}
+
+function refreshLiveMenu(callback,force=false){
+  if(typeof callback==="function")LIVE_MENU_WAITERS.push(callback);
+
+  // Once this browser session has a verified live menu, use it immediately.
+  // This avoids hammering Google's iframe every time a customer taps a button.
+  if(LIVE_MENU_READY && !force){
+    const waiters=[...LIVE_MENU_WAITERS];
+    LIVE_MENU_WAITERS=[];
+    waiters.forEach(fn=>{try{fn(true)}catch(err){console.error(err)}});
+    return;
+  }
+
+  // Share one refresh instead of creating competing iframe loads.
+  if(LIVE_MENU_REFRESHING)return;
+
+  LIVE_MENU_REFRESHING=true;
+  LIVE_MENU_ATTEMPT=0;
+  runLiveMenuAttempt();
+}
+
+// The static iframe begins loading before app.js finishes. If that first response
+// arrives, we use it. If not, this starts the retry cycle using the SAME iframe.
 document.addEventListener("DOMContentLoaded",()=>{
   useMenuResponse(window.GOTTA_COFFEE_LIVE_MENU);
-  refreshLiveMenu();
+  if(!LIVE_MENU_READY)refreshLiveMenu();
 });
 
-// GitHub Pages receives the live menu through the temporary Apps Script iframe.
 window.addEventListener("message",(event)=>{
   const data=event.data;
   if(!data || data.type!=="GOTTA_COFFEE_MENU")return;
-  if(useMenuResponse(data.payload)){
-    window.GOTTA_COFFEE_LIVE_MENU=data.payload;
-    finishLiveMenuLoad(true);
-  }
+  if(useMenuResponse(data.payload))window.GOTTA_COFFEE_LIVE_MENU=data.payload;
 });
 
 function showView(id){document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$(id).classList.add("active");scrollTo(0,0)}
@@ -123,26 +124,25 @@ function renderOrderingClosed(){
 function renderLiveMenuError(targetId){
   $(targetId).innerHTML=`<div class="panel"><h2>We couldn't refresh the current menu</h2><div class="notice">Please tap Retry so we can load today's prices and available options directly from Gotta Coffee.</div><div class="actions"><button class="primary" onclick="${targetId==='orderContent'?'startOrder()':targetId==='menuContent'?'showMenu()':'showInfo()'}">Retry</button><button onclick="goHome()">Home</button></div></div>`;
 }
-async function startOrder(){
+function startOrder(){
   cart=[];
   showView("orderView");
   $("orderContent").innerHTML=`<div class="panel"><h2>Loading today's menu… ☕</h2><div class="notice" data-live-menu-status>Checking current prices and available options.</div></div>`;
-  const ok=await refreshLiveMenu();
-  if(!ok)return renderLiveMenuError("orderContent");
-  if(MENU.business && MENU.business.orderingOpen===false)return renderOrderingClosed();
-  renderDrinkPicker();
+  refreshLiveMenu(ok=>{
+    if(!ok)return renderLiveMenuError("orderContent");
+    if(MENU.business && MENU.business.orderingOpen===false)return renderOrderingClosed();
+    renderDrinkPicker();
+  });
 }
-async function showMenu(){
+function showMenu(){
   showView("menuView");
   $("menuContent").innerHTML=`<div class="panel"><h2>Loading today's menu… ☕</h2><div class="notice" data-live-menu-status>Checking current prices and availability.</div></div>`;
-  const ok=await refreshLiveMenu();
-  ok?renderMenu():renderLiveMenuError("menuContent");
+  refreshLiveMenu(ok=>ok?renderMenu():renderLiveMenuError("menuContent"));
 }
-async function showInfo(){
+function showInfo(){
   showView("infoView");
   $("infoContent").innerHTML=`<div class="panel"><h2>Loading delivery information…</h2><div class="notice" data-live-menu-status>Checking today's delivery options.</div></div>`;
-  const ok=await refreshLiveMenu();
-  ok?renderInfo():renderLiveMenuError("infoContent");
+  refreshLiveMenu(ok=>ok?renderInfo():renderLiveMenuError("infoContent"));
 }
 function showChat(){showView("chatView");initChat()}
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
