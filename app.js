@@ -8,7 +8,7 @@ let LIVE_MENU_WAITERS=[];
 let LIVE_MENU_TIMER=null;
 let LIVE_MENU_ATTEMPT=0;
 const LIVE_MENU_MAX_ATTEMPTS=4;
-const LIVE_MENU_ATTEMPT_TIMEOUT=6000;
+const LIVE_MENU_ATTEMPT_TIMEOUT=8000;
 
 function applyLiveMenu(live){
   if(!live||typeof live!=="object")throw Error("Live menu response was empty.");
@@ -28,10 +28,18 @@ function applyLiveMenu(live){
   console.log("Gotta Coffee live menu loaded.",live.updatedAt||"");
 }
 
+// Compatible with BOTH bridge formats:
+// old proven bridge: payload = live menu object
+// newer bridge:       payload = {ok:true, menu: live menu object}
 function useMenuResponse(response){
   try{
-    if(response && response.ok && response.menu){
+    if(!response || typeof response!=="object")return false;
+    if(response.ok===true && response.menu){
       applyLiveMenu(response.menu);
+      return true;
+    }
+    if(Array.isArray(response.drinks) || response.business){
+      applyLiveMenu(response);
       return true;
     }
   }catch(err){
@@ -52,30 +60,15 @@ function finishLiveMenuFailure(){
   waiters.forEach(fn=>{try{fn(false)}catch(err){console.error(err)}});
 }
 
-function runLiveMenuAttempt(){
-  const frame=$("gcLiveMenuBridge");
-  if(!frame){
-    console.error("Live menu bridge iframe is missing.");
-    finishLiveMenuFailure();
-    return;
-  }
-
-  LIVE_MENU_ATTEMPT++;
-  setLiveMenuStatus(`Checking today's menu… attempt ${LIVE_MENU_ATTEMPT} of ${LIVE_MENU_MAX_ATTEMPTS}`);
-
-  // Keep the same proven hidden iframe that worked before. We only refresh its URL.
-  frame.src=CONFIG.APPS_SCRIPT_URL+"?action=menuBridge&_="+Date.now();
-
+function scheduleBridgeTimeout(){
   if(LIVE_MENU_TIMER)clearTimeout(LIVE_MENU_TIMER);
   const thisAttempt=LIVE_MENU_ATTEMPT;
   LIVE_MENU_TIMER=setTimeout(()=>{
-    if(!LIVE_MENU_REFRESHING || LIVE_MENU_READY)return;
+    if(LIVE_MENU_READY)return;
     if(thisAttempt!==LIVE_MENU_ATTEMPT)return;
     if(LIVE_MENU_ATTEMPT<LIVE_MENU_MAX_ATTEMPTS){
       setLiveMenuStatus("Google took a little too long — retrying automatically…");
-      setTimeout(()=>{
-        if(LIVE_MENU_REFRESHING && !LIVE_MENU_READY)runLiveMenuAttempt();
-      },700);
+      setTimeout(runLiveMenuRetry,900);
     }else{
       console.warn("Fresh live menu did not arrive after automatic retries.");
       finishLiveMenuFailure();
@@ -83,31 +76,42 @@ function runLiveMenuAttempt(){
   },LIVE_MENU_ATTEMPT_TIMEOUT);
 }
 
-function refreshLiveMenu(callback,force=false){
-  if(typeof callback==="function")LIVE_MENU_WAITERS.push(callback);
+function runLiveMenuRetry(){
+  if(LIVE_MENU_READY)return;
+  const frame=$("gcLiveMenuBridge");
+  if(!frame){
+    console.error("Live menu bridge iframe is missing.");
+    finishLiveMenuFailure();
+    return;
+  }
+  LIVE_MENU_REFRESHING=true;
+  LIVE_MENU_ATTEMPT++;
+  setLiveMenuStatus(`Checking today's menu… attempt ${LIVE_MENU_ATTEMPT} of ${LIVE_MENU_MAX_ATTEMPTS}`);
+  // Retry the SAME permanent iframe only after the prior request had a full chance to finish.
+  frame.src=CONFIG.APPS_SCRIPT_URL+"?action=menuBridge&v=20260910r3-"+LIVE_MENU_ATTEMPT+"&_="+Date.now();
+  scheduleBridgeTimeout();
+}
 
-  // Once this browser session has a verified live menu, use it immediately.
-  // This avoids hammering Google's iframe every time a customer taps a button.
-  if(LIVE_MENU_READY && !force){
+function refreshLiveMenu(callback){
+  if(typeof callback==="function")LIVE_MENU_WAITERS.push(callback);
+  if(LIVE_MENU_READY){
     const waiters=[...LIVE_MENU_WAITERS];
     LIVE_MENU_WAITERS=[];
     waiters.forEach(fn=>{try{fn(true)}catch(err){console.error(err)}});
     return;
   }
-
-  // Share one refresh instead of creating competing iframe loads.
   if(LIVE_MENU_REFRESHING)return;
-
+  // IMPORTANT: do not immediately rewrite iframe.src. Let the static, proven
+  // iframe from index.html finish its first request before retrying anything.
   LIVE_MENU_REFRESHING=true;
-  LIVE_MENU_ATTEMPT=0;
-  runLiveMenuAttempt();
+  LIVE_MENU_ATTEMPT=1;
+  setLiveMenuStatus(`Checking today's menu… attempt 1 of ${LIVE_MENU_MAX_ATTEMPTS}`);
+  scheduleBridgeTimeout();
 }
 
-// The static iframe begins loading before app.js finishes. If that first response
-// arrives, we use it. If not, this starts the retry cycle using the SAME iframe.
 document.addEventListener("DOMContentLoaded",()=>{
-  useMenuResponse(window.GOTTA_COFFEE_LIVE_MENU);
-  if(!LIVE_MENU_READY)refreshLiveMenu();
+  if(useMenuResponse(window.GOTTA_COFFEE_LIVE_MENU))return;
+  refreshLiveMenu();
 });
 
 window.addEventListener("message",(event)=>{
