@@ -4,6 +4,8 @@ const $=id=>document.getElementById(id),money=n=>`$${Number(n||0).toFixed(2)}`;
 
 let LIVE_MENU_READY=false;
 let LIVE_MENU_TIMER=null;
+let LIVE_MENU_WAITERS=[];
+let LIVE_MENU_REFRESHING=false;
 
 function applyLiveMenu(live){
   if(!live||typeof live!=="object")throw Error("Live menu response was empty.");
@@ -12,8 +14,39 @@ function applyLiveMenu(live){
   });
   if(live.business)MENU.business={...(MENU.business||{}),...live.business};
   LIVE_MENU_READY=true;
+  LIVE_MENU_REFRESHING=false;
   if(LIVE_MENU_TIMER)clearTimeout(LIVE_MENU_TIMER);
+  const waiters=[...LIVE_MENU_WAITERS];
+  LIVE_MENU_WAITERS=[];
+  waiters.forEach(fn=>{try{fn(true)}catch(err){console.error(err)}});
   console.log("Gotta Coffee live menu loaded.",live.updatedAt||"");
+}
+
+function refreshLiveMenu(callback){
+  if(typeof callback==="function")LIVE_MENU_WAITERS.push(callback);
+
+  const frame=$("gcLiveMenuBridge");
+  if(!frame){
+    console.error("Live menu bridge iframe is missing.");
+    const waiters=[...LIVE_MENU_WAITERS];LIVE_MENU_WAITERS=[];
+    waiters.forEach(fn=>fn(false));
+    return;
+  }
+
+  LIVE_MENU_REFRESHING=true;
+  if(LIVE_MENU_TIMER)clearTimeout(LIVE_MENU_TIMER);
+
+  // The timestamp forces Safari/GitHub/Apps Script to request fresh spreadsheet data
+  // instead of reusing a cached menuBridge response.
+  frame.src=CONFIG.APPS_SCRIPT_URL+"?action=menuBridge&_="+Date.now();
+
+  LIVE_MENU_TIMER=setTimeout(()=>{
+    if(!LIVE_MENU_REFRESHING)return;
+    LIVE_MENU_REFRESHING=false;
+    console.warn("Fresh live menu did not arrive from Apps Script.");
+    const waiters=[...LIVE_MENU_WAITERS];LIVE_MENU_WAITERS=[];
+    waiters.forEach(fn=>fn(false));
+  },7000);
 }
 
 function useMenuResponse(response){
@@ -28,15 +61,10 @@ function useMenuResponse(response){
   return false;
 }
 
-// Supports a preloaded menu if one is already present.
+// Load a fresh menu as soon as the page opens.
 document.addEventListener("DOMContentLoaded",()=>{
   useMenuResponse(window.GOTTA_COFFEE_LIVE_MENU);
-
-  LIVE_MENU_TIMER=setTimeout(()=>{
-    if(!LIVE_MENU_READY){
-      console.warn("Live menu did not arrive; Gotta Coffee is using menu.js fallback.");
-    }
-  },5000);
+  refreshLiveMenu();
 });
 
 // GitHub Pages receives the live menu through the hidden Apps Script iframe.
@@ -50,16 +78,32 @@ window.addEventListener("message",(event)=>{
 
 function showView(id){document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$(id).classList.add("active");scrollTo(0,0)}
 function goHome(){showView("homeView")}
-function startOrder(){
-  if(MENU.business && MENU.business.orderingOpen===false){
-    showView("orderView");
-    $("orderContent").innerHTML=`<div class="panel"><h2>☕ Ordering is currently closed</h2><div class="notice">${escapeHtml(MENU.business.closedMessage||"Ordering is currently closed. Please check back later!")}</div><div class="actions"><button onclick="goHome()">← Home</button></div></div>`;
-    return;
-  }
-  cart=[];showView("orderView");renderDrinkPicker();
+function renderOrderingClosed(){
+  $("orderContent").innerHTML=`<div class="panel"><h2>☕ Ordering is currently closed</h2><div class="notice">${escapeHtml(MENU.business.closedMessage||"Ordering is currently closed. Please check back later!")}</div><div class="actions"><button onclick="goHome()">← Home</button></div></div>`;
 }
-function showMenu(){showView("menuView");renderMenu()}
-function showInfo(){showView("infoView");renderInfo()}
+function renderLiveMenuError(targetId){
+  $(targetId).innerHTML=`<div class="panel"><h2>We couldn't refresh the current menu</h2><div class="notice">Please tap Retry so we can load today's prices and available options directly from Gotta Coffee.</div><div class="actions"><button class="primary" onclick="${targetId==='orderContent'?'startOrder()':targetId==='menuContent'?'showMenu()':'showInfo()'}">Retry</button><button onclick="goHome()">Home</button></div></div>`;
+}
+function startOrder(){
+  cart=[];
+  showView("orderView");
+  $("orderContent").innerHTML=`<div class="panel"><h2>Loading today's menu… ☕</h2><div class="notice">Checking current prices and available options.</div></div>`;
+  refreshLiveMenu(ok=>{
+    if(!ok)return renderLiveMenuError("orderContent");
+    if(MENU.business && MENU.business.orderingOpen===false)return renderOrderingClosed();
+    renderDrinkPicker();
+  });
+}
+function showMenu(){
+  showView("menuView");
+  $("menuContent").innerHTML=`<div class="panel"><h2>Loading today's menu… ☕</h2></div>`;
+  refreshLiveMenu(ok=>ok?renderMenu():renderLiveMenuError("menuContent"));
+}
+function showInfo(){
+  showView("infoView");
+  $("infoContent").innerHTML=`<div class="panel"><h2>Loading delivery information…</h2></div>`;
+  refreshLiveMenu(ok=>ok?renderInfo():renderLiveMenuError("infoContent"));
+}
 function showChat(){showView("chatView");initChat()}
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
 function jsq(s){return String(s).replace(/\\/g,"\\\\").replace(/'/g,"\\'")}
