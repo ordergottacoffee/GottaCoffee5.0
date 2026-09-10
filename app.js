@@ -6,9 +6,10 @@ let LIVE_MENU_READY=false;
 let LIVE_MENU_REFRESHING=false;
 let LIVE_MENU_WAITERS=[];
 let LIVE_MENU_TIMER=null;
+let LIVE_MENU_SCRIPT=null;
 let LIVE_MENU_ATTEMPT=0;
 const LIVE_MENU_MAX_ATTEMPTS=4;
-const LIVE_MENU_ATTEMPT_TIMEOUT=8000;
+const LIVE_MENU_ATTEMPT_TIMEOUT=9000;
 
 function applyLiveMenu(live){
   if(!live||typeof live!=="object")throw Error("Live menu response was empty.");
@@ -20,6 +21,7 @@ function applyLiveMenu(live){
   LIVE_MENU_REFRESHING=false;
   LIVE_MENU_ATTEMPT=0;
   if(LIVE_MENU_TIMER){clearTimeout(LIVE_MENU_TIMER);LIVE_MENU_TIMER=null;}
+  if(LIVE_MENU_SCRIPT){try{LIVE_MENU_SCRIPT.remove()}catch(_){ } LIVE_MENU_SCRIPT=null;}
   try{localStorage.setItem("gottaCoffeeLastLiveMenu",JSON.stringify({savedAt:Date.now(),menu:live}));}catch(_){ }
   const waiters=[...LIVE_MENU_WAITERS];
   LIVE_MENU_WAITERS=[];
@@ -28,9 +30,6 @@ function applyLiveMenu(live){
   console.log("Gotta Coffee live menu loaded.",live.updatedAt||"");
 }
 
-// Compatible with BOTH bridge formats:
-// old proven bridge: payload = live menu object
-// newer bridge:       payload = {ok:true, menu: live menu object}
 function useMenuResponse(response){
   try{
     if(!response || typeof response!=="object")return false;
@@ -55,41 +54,55 @@ function setLiveMenuStatus(message){
 function finishLiveMenuFailure(){
   LIVE_MENU_REFRESHING=false;
   if(LIVE_MENU_TIMER){clearTimeout(LIVE_MENU_TIMER);LIVE_MENU_TIMER=null;}
+  if(LIVE_MENU_SCRIPT){try{LIVE_MENU_SCRIPT.remove()}catch(_){ } LIVE_MENU_SCRIPT=null;}
   const waiters=[...LIVE_MENU_WAITERS];
   LIVE_MENU_WAITERS=[];
   waiters.forEach(fn=>{try{fn(false)}catch(err){console.error(err)}});
 }
 
-function scheduleBridgeTimeout(){
-  if(LIVE_MENU_TIMER)clearTimeout(LIVE_MENU_TIMER);
-  const thisAttempt=LIVE_MENU_ATTEMPT;
-  LIVE_MENU_TIMER=setTimeout(()=>{
-    if(LIVE_MENU_READY)return;
-    if(thisAttempt!==LIVE_MENU_ATTEMPT)return;
-    if(LIVE_MENU_ATTEMPT<LIVE_MENU_MAX_ATTEMPTS){
-      setLiveMenuStatus("Google took a little too long — retrying automatically…");
-      setTimeout(runLiveMenuRetry,900);
-    }else{
-      console.warn("Fresh live menu did not arrive after automatic retries.");
-      finishLiveMenuFailure();
-    }
-  },LIVE_MENU_ATTEMPT_TIMEOUT);
-}
+// JSONP callback used by the Apps Script ?action=menu endpoint.
+// This avoids the cross-site iframe/postMessage path that Facebook's in-app
+// browser was blocking.
+window.gottaCoffeeMenuCallback=function(response){
+  if(useMenuResponse(response)) window.GOTTA_COFFEE_LIVE_MENU=response;
+};
 
-function runLiveMenuRetry(){
+function runLiveMenuAttempt(){
   if(LIVE_MENU_READY)return;
-  const frame=$("gcLiveMenuBridge");
-  if(!frame){
-    console.error("Live menu bridge iframe is missing.");
-    finishLiveMenuFailure();
-    return;
-  }
   LIVE_MENU_REFRESHING=true;
   LIVE_MENU_ATTEMPT++;
   setLiveMenuStatus(`Checking today's menu… attempt ${LIVE_MENU_ATTEMPT} of ${LIVE_MENU_MAX_ATTEMPTS}`);
-  // Retry the SAME permanent iframe only after the prior request had a full chance to finish.
-  frame.src=CONFIG.APPS_SCRIPT_URL+"?action=menuBridge&v=20260910r3-"+LIVE_MENU_ATTEMPT+"&_="+Date.now();
-  scheduleBridgeTimeout();
+
+  if(LIVE_MENU_SCRIPT){try{LIVE_MENU_SCRIPT.remove()}catch(_){ }}
+  const script=document.createElement("script");
+  LIVE_MENU_SCRIPT=script;
+  script.async=true;
+  script.src=CONFIG.APPS_SCRIPT_URL+
+    "?action=menu&callback=gottaCoffeeMenuCallback&_="+Date.now()+"-"+LIVE_MENU_ATTEMPT;
+  script.onerror=function(){
+    if(LIVE_MENU_READY)return;
+    if(LIVE_MENU_TIMER){clearTimeout(LIVE_MENU_TIMER);LIVE_MENU_TIMER=null;}
+    retryOrFail();
+  };
+  document.head.appendChild(script);
+
+  if(LIVE_MENU_TIMER)clearTimeout(LIVE_MENU_TIMER);
+  const thisAttempt=LIVE_MENU_ATTEMPT;
+  LIVE_MENU_TIMER=setTimeout(function(){
+    if(LIVE_MENU_READY || thisAttempt!==LIVE_MENU_ATTEMPT)return;
+    retryOrFail();
+  },LIVE_MENU_ATTEMPT_TIMEOUT);
+}
+
+function retryOrFail(){
+  if(LIVE_MENU_READY)return;
+  if(LIVE_MENU_ATTEMPT<LIVE_MENU_MAX_ATTEMPTS){
+    setLiveMenuStatus("Google took a little too long — retrying automatically…");
+    setTimeout(runLiveMenuAttempt,900);
+  }else{
+    console.warn("Fresh live menu did not arrive after automatic retries.");
+    finishLiveMenuFailure();
+  }
 }
 
 function refreshLiveMenu(callback){
@@ -101,23 +114,13 @@ function refreshLiveMenu(callback){
     return;
   }
   if(LIVE_MENU_REFRESHING)return;
-  // IMPORTANT: do not immediately rewrite iframe.src. Let the static, proven
-  // iframe from index.html finish its first request before retrying anything.
-  LIVE_MENU_REFRESHING=true;
-  LIVE_MENU_ATTEMPT=1;
-  setLiveMenuStatus(`Checking today's menu… attempt 1 of ${LIVE_MENU_MAX_ATTEMPTS}`);
-  scheduleBridgeTimeout();
+  LIVE_MENU_ATTEMPT=0;
+  runLiveMenuAttempt();
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
   if(useMenuResponse(window.GOTTA_COFFEE_LIVE_MENU))return;
   refreshLiveMenu();
-});
-
-window.addEventListener("message",(event)=>{
-  const data=event.data;
-  if(!data || data.type!=="GOTTA_COFFEE_MENU")return;
-  if(useMenuResponse(data.payload))window.GOTTA_COFFEE_LIVE_MENU=data.payload;
 });
 
 function showView(id){document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$(id).classList.add("active");scrollTo(0,0)}
