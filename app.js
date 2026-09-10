@@ -87,7 +87,7 @@ function renderLiveMenuError(targetId){
 function startOrder(){
   cart=[];
   showView("orderView");
-  $("orderContent").innerHTML=`<div class="panel"><h2>Loading today's menu… ☕</h2><div class="notice">Checking current prices and available options.</div></div>`;
+  $("orderContent").innerHTML=`<div class="panel"><h2>Loading today's menu… ☕</h2><div class="notice">Checking current prices and available options. Please hold.</div></div>`;
   refreshLiveMenu(ok=>{
     if(!ok)return renderLiveMenuError("orderContent");
     if(MENU.business && MENU.business.orderingOpen===false)return renderOrderingClosed();
