@@ -3,9 +3,13 @@ let cart=[],currentDrink=null,selectedOptions={milk:null,flavors:[],bottom:null,
 const $=id=>document.getElementById(id),money=n=>`$${Number(n||0).toFixed(2)}`;
 
 let LIVE_MENU_READY=false;
-let LIVE_MENU_TIMER=null;
-let LIVE_MENU_WAITERS=[];
-let LIVE_MENU_REFRESHING=false;
+let LIVE_MENU_REQUEST_ID=0;
+let LIVE_MENU_ACTIVE_FRAME=null;
+let LIVE_MENU_LOAD_PROMISE=null;
+let LIVE_MENU_LOAD_RESOLVE=null;
+let LIVE_MENU_ATTEMPT=0;
+const LIVE_MENU_MAX_ATTEMPTS=4;
+const LIVE_MENU_ATTEMPT_TIMEOUT=4500;
 
 function applyLiveMenu(live){
   if(!live||typeof live!=="object")throw Error("Live menu response was empty.");
@@ -14,39 +18,72 @@ function applyLiveMenu(live){
   });
   if(live.business)MENU.business={...(MENU.business||{}),...live.business};
   LIVE_MENU_READY=true;
-  LIVE_MENU_REFRESHING=false;
-  if(LIVE_MENU_TIMER)clearTimeout(LIVE_MENU_TIMER);
-  const waiters=[...LIVE_MENU_WAITERS];
-  LIVE_MENU_WAITERS=[];
-  waiters.forEach(fn=>{try{fn(true)}catch(err){console.error(err)}});
+  try{localStorage.setItem("gottaCoffeeLastLiveMenu",JSON.stringify({savedAt:Date.now(),menu:live}));}catch(_){ }
   console.log("Gotta Coffee live menu loaded.",live.updatedAt||"");
 }
 
-function refreshLiveMenu(callback){
-  if(typeof callback==="function")LIVE_MENU_WAITERS.push(callback);
-
-  const frame=$("gcLiveMenuBridge");
-  if(!frame){
-    console.error("Live menu bridge iframe is missing.");
-    const waiters=[...LIVE_MENU_WAITERS];LIVE_MENU_WAITERS=[];
-    waiters.forEach(fn=>fn(false));
-    return;
+function removeLiveMenuFrame(){
+  if(LIVE_MENU_ACTIVE_FRAME){
+    try{LIVE_MENU_ACTIVE_FRAME.remove();}catch(_){ }
+    LIVE_MENU_ACTIVE_FRAME=null;
   }
+}
 
-  LIVE_MENU_REFRESHING=true;
-  if(LIVE_MENU_TIMER)clearTimeout(LIVE_MENU_TIMER);
+function finishLiveMenuLoad(ok){
+  removeLiveMenuFrame();
+  const resolve=LIVE_MENU_LOAD_RESOLVE;
+  LIVE_MENU_LOAD_RESOLVE=null;
+  LIVE_MENU_LOAD_PROMISE=null;
+  if(resolve)resolve(ok);
+}
 
-  // The timestamp forces Safari/GitHub/Apps Script to request fresh spreadsheet data
-  // instead of reusing a cached menuBridge response.
-  frame.src=CONFIG.APPS_SCRIPT_URL+"?action=menuBridge&_="+Date.now();
+function setLiveMenuStatus(message){
+  document.querySelectorAll("[data-live-menu-status]").forEach(el=>el.textContent=message);
+}
 
-  LIVE_MENU_TIMER=setTimeout(()=>{
-    if(!LIVE_MENU_REFRESHING)return;
-    LIVE_MENU_REFRESHING=false;
-    console.warn("Fresh live menu did not arrive from Apps Script.");
-    const waiters=[...LIVE_MENU_WAITERS];LIVE_MENU_WAITERS=[];
-    waiters.forEach(fn=>fn(false));
-  },7000);
+function beginLiveMenuAttempt(requestId){
+  if(requestId!==LIVE_MENU_REQUEST_ID)return;
+  LIVE_MENU_ATTEMPT++;
+  removeLiveMenuFrame();
+
+  setLiveMenuStatus(`Checking today's menu… attempt ${LIVE_MENU_ATTEMPT} of ${LIVE_MENU_MAX_ATTEMPTS}`);
+
+  const frame=document.createElement("iframe");
+  frame.title="Gotta Coffee live menu";
+  frame.style.cssText="display:none;width:0;height:0;border:0";
+  frame.setAttribute("aria-hidden","true");
+  frame.dataset.requestId=String(requestId);
+  frame.src=CONFIG.APPS_SCRIPT_URL+"?action=menuBridge&requestId="+encodeURIComponent(requestId+"-"+LIVE_MENU_ATTEMPT)+"&_="+Date.now();
+  LIVE_MENU_ACTIVE_FRAME=frame;
+  document.body.appendChild(frame);
+
+  const attemptNumber=LIVE_MENU_ATTEMPT;
+  setTimeout(()=>{
+    if(requestId!==LIVE_MENU_REQUEST_ID || !LIVE_MENU_LOAD_PROMISE)return;
+    if(LIVE_MENU_ATTEMPT!==attemptNumber)return;
+    removeLiveMenuFrame();
+    if(LIVE_MENU_ATTEMPT<LIVE_MENU_MAX_ATTEMPTS){
+      const delay=500*LIVE_MENU_ATTEMPT;
+      setLiveMenuStatus("Google took a little too long — retrying automatically…");
+      setTimeout(()=>beginLiveMenuAttempt(requestId),delay);
+    }else{
+      console.warn("Live menu could not be loaded after automatic retries.");
+      finishLiveMenuLoad(false);
+    }
+  },LIVE_MENU_ATTEMPT_TIMEOUT);
+}
+
+function refreshLiveMenu(){
+  // If a refresh is already in progress, every caller shares it instead of
+  // creating competing Google iframes (which was causing intermittent failures).
+  if(LIVE_MENU_LOAD_PROMISE)return LIVE_MENU_LOAD_PROMISE;
+
+  LIVE_MENU_REQUEST_ID++;
+  LIVE_MENU_ATTEMPT=0;
+  const requestId=LIVE_MENU_REQUEST_ID;
+  LIVE_MENU_LOAD_PROMISE=new Promise(resolve=>{LIVE_MENU_LOAD_RESOLVE=resolve;});
+  beginLiveMenuAttempt(requestId);
+  return LIVE_MENU_LOAD_PROMISE;
 }
 
 function useMenuResponse(response){
@@ -61,18 +98,20 @@ function useMenuResponse(response){
   return false;
 }
 
-// Load a fresh menu as soon as the page opens.
+// Prefetch once when the page opens. If a customer taps Order while this is
+// still loading, startOrder() simply waits for the same request.
 document.addEventListener("DOMContentLoaded",()=>{
   useMenuResponse(window.GOTTA_COFFEE_LIVE_MENU);
   refreshLiveMenu();
 });
 
-// GitHub Pages receives the live menu through the hidden Apps Script iframe.
+// GitHub Pages receives the live menu through the temporary Apps Script iframe.
 window.addEventListener("message",(event)=>{
   const data=event.data;
   if(!data || data.type!=="GOTTA_COFFEE_MENU")return;
   if(useMenuResponse(data.payload)){
     window.GOTTA_COFFEE_LIVE_MENU=data.payload;
+    finishLiveMenuLoad(true);
   }
 });
 
@@ -84,25 +123,26 @@ function renderOrderingClosed(){
 function renderLiveMenuError(targetId){
   $(targetId).innerHTML=`<div class="panel"><h2>We couldn't refresh the current menu</h2><div class="notice">Please tap Retry so we can load today's prices and available options directly from Gotta Coffee.</div><div class="actions"><button class="primary" onclick="${targetId==='orderContent'?'startOrder()':targetId==='menuContent'?'showMenu()':'showInfo()'}">Retry</button><button onclick="goHome()">Home</button></div></div>`;
 }
-function startOrder(){
+async function startOrder(){
   cart=[];
   showView("orderView");
-  $("orderContent").innerHTML=`<div class="panel"><h2>Loading today's menu… ☕</h2><div class="notice">Checking current prices and available options. Please hold.</div></div>`;
-  refreshLiveMenu(ok=>{
-    if(!ok)return renderLiveMenuError("orderContent");
-    if(MENU.business && MENU.business.orderingOpen===false)return renderOrderingClosed();
-    renderDrinkPicker();
-  });
+  $("orderContent").innerHTML=`<div class="panel"><h2>Loading today's menu… ☕</h2><div class="notice" data-live-menu-status>Checking current prices and available options.</div></div>`;
+  const ok=await refreshLiveMenu();
+  if(!ok)return renderLiveMenuError("orderContent");
+  if(MENU.business && MENU.business.orderingOpen===false)return renderOrderingClosed();
+  renderDrinkPicker();
 }
-function showMenu(){
+async function showMenu(){
   showView("menuView");
-  $("menuContent").innerHTML=`<div class="panel"><h2>Loading today's menu… ☕</h2></div>`;
-  refreshLiveMenu(ok=>ok?renderMenu():renderLiveMenuError("menuContent"));
+  $("menuContent").innerHTML=`<div class="panel"><h2>Loading today's menu… ☕</h2><div class="notice" data-live-menu-status>Checking current prices and availability.</div></div>`;
+  const ok=await refreshLiveMenu();
+  ok?renderMenu():renderLiveMenuError("menuContent");
 }
-function showInfo(){
+async function showInfo(){
   showView("infoView");
-  $("infoContent").innerHTML=`<div class="panel"><h2>Loading delivery information…</h2></div>`;
-  refreshLiveMenu(ok=>ok?renderInfo():renderLiveMenuError("infoContent"));
+  $("infoContent").innerHTML=`<div class="panel"><h2>Loading delivery information…</h2><div class="notice" data-live-menu-status>Checking today's delivery options.</div></div>`;
+  const ok=await refreshLiveMenu();
+  ok?renderInfo():renderLiveMenuError("infoContent");
 }
 function showChat(){showView("chatView");initChat()}
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
@@ -137,7 +177,7 @@ function renderCheckout(){
   if(!times.length){$("orderContent").innerHTML=`<div class="panel"><h2>Delivery unavailable</h2><div class="notice">No delivery times are currently available. Please check back later.</div><div class="actions"><button onclick="goHome()">← Home</button></div></div>`;return}
   $("orderContent").innerHTML=`<div class="panel"><h2>Delivery & Checkout</h2><div class="notice">Minimum: <strong>${money(MENU.business.deliveryMinimum)}</strong> before fees. Cash delivery is free; Venmo adds ${money(MENU.business.venmoDeliveryFee)}.</div>
   <label>Name *</label><input id="custName"><label>Phone *</label><input id="custPhone" type="tel"><label>Email *</label><input id="custEmail" type="email" required><label>Delivery town *</label><select id="town" required><option value="">Choose...</option>${towns.map(x=>`<option>${escapeHtml(x)}</option>`).join("")}</select><label>Delivery address *</label><input id="address"><label>Delivery time *</label><select id="deliveryTime" required><option value="">Choose...</option>${times.map(x=>`<option>${escapeHtml(x)}</option>`).join("")}</select><label>Payment *</label><select id="payment"><option value="">Choose...</option><option>Cash</option><option>Venmo</option></select>
-  <div class="notice payment-instructions">Your total is calculated below. If paying cash, change is available up to $50. If paying Venmo, the link is available by clicking the purple neon Venmo on the previous page, or I can send it to your email/text. By placing this sovereign food order, I understand that I will be responsible for payment upon delivery. Reach out to ordergottacoffee@gmail.com if you have any questions, comments, or concerns!</strong>!</div>
+  <div class="notice payment-instructions">Your total is calculated below. If paying cash, change is available up to $50. If paying Venmo, the link is available by clicking the purple neon Venmo on the previous page, or I can send it to your email/text. By placing this sovereign food order, I understand that I will be responsible for payment upon delivery. Reach out to <strong>ordergottacoffee@gmail.com</strong>!</div>
   <label>Order notes</label><textarea id="orderNotes"></textarea>
   <div class="summary"><div class="summary-row"><span>Subtotal</span><strong>${money(s)}</strong></div><div class="summary-row"><span>Delivery</span><strong id="deliveryFee">${money(0)}</strong></div><div class="summary-row total"><span>Total</span><strong id="checkoutTotal">${money(s)}</strong></div></div><div class="actions"><button onclick="renderCart()">← Back</button><button class="primary" onclick="submitOrder()">Place Order</button></div></div>`;
   $("payment").onchange=updateCheckoutTotal;
