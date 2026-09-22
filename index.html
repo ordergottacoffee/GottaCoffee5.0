@@ -1,14 +1,69 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gotta Coffee | Order & Chat</title><link rel="stylesheet" href="style.css?v=20260910fb4"></head>
+<title>Gotta Coffee | Order & Chat</title>
+<style>*{box-sizing:border-box}:root{--bg:#eee;--card:#fff;--text:#161616;--muted:#666;--blue:#2d74b8;--green:#45a447;--red:#d83a32;--yellow:#f0c62f;--border:#d8d8d8}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}.site-header{text-align:center;padding:24px 16px 12px}
+.logo{font-weight:900;font-size:clamp(2rem,8vw,4rem);letter-spacing:-.08em;line-height:1}.logo span{display:inline-block}.blue{color:var(--blue)}.green{color:var(--green)}.red{color:var(--red)}.yellow{color:var(--yellow)}
+.site-header p{margin:10px 0;color:#444}.app-shell{width:min(760px,calc(100% - 14px));margin:0 auto 24px}.view{display:none}.view.active{display:block}
+.hero-card,.panel,.chat-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:22px;box-shadow:0 5px 18px #0000000f}
+h1,h2,h3{margin-top:0}.hero-card{text-align:center}.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+button{font:inherit;cursor:pointer;border:1px solid #ccc;border-radius:12px;background:white;padding:12px 14px}.big-btn{min-height:105px;background:#f8f8f8;font-size:1.8rem;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px}.big-btn span{font-size:1rem}
+.topbar{display:flex;align-items:center;gap:15px;margin-bottom:12px;font-weight:800;font-size:1.2rem}.choices{display:grid;gap:10px}.choice{display:flex;justify-content:space-between;align-items:center;text-align:left;width:100%;background:#fff}
+.choice small{display:block;color:var(--muted);margin-top:4px;font-weight:400}.price{font-weight:800;white-space:nowrap}.choice.selected,.chip.selected{outline:3px solid var(--yellow);background:#fffdf0}
+.notice{background:#fff8cf;border:1px solid #e5cf59;padding:14px;border-radius:12px;margin:12px 0}.option-group{margin:18px 0}.option-group h3{margin-bottom:8px}
+.actions{display:flex;gap:10px;margin-top:18px}.actions button{flex:1;font-weight:800}.primary{background:#111;color:#fff;border-color:#111}.danger{background:#fff0ef;border-color:#e0aaa7}
+input,select,textarea{width:100%;padding:12px;border:1px solid #bbb;border-radius:10px;font:inherit;background:#fff}textarea{min-height:90px;resize:vertical}label{display:block;font-weight:700;margin:12px 0 6px}
+.summary{background:#f7f7f7;border-radius:12px;padding:14px;margin:12px 0}.summary-row{display:flex;justify-content:space-between;gap:12px;margin:7px 0}.total{font-size:1.2rem;font-weight:900;border-top:1px solid #ccc;padding-top:10px}
+.menu-item{padding:15px 0;border-bottom:1px solid #ddd}.menu-item:last-child{border-bottom:0}.menu-item h3{margin:0 0 5px}.menu-item p{margin:0 0 7px;color:#555}.chips{display:flex;flex-wrap:wrap;gap:7px}.chip{background:#f1f1f1;padding:7px 9px;border-radius:99px;font-size:.9rem}
+.chat-messages{height:420px;overflow:auto;padding:6px}.bubble{max-width:82%;padding:11px 13px;border-radius:16px;margin:8px 0;line-height:1.4}.bot{background:#f0f0f0;margin-right:auto}.user{background:#111;color:#fff;margin-left:auto}.quick-replies{display:flex;gap:7px;overflow:auto;padding:10px 0}.quick-replies button{white-space:nowrap}.chat-form{display:flex;gap:8px}.chat-form input{flex:1}.chat-form button{background:#111;color:#fff}footer{text-align:center;color:#777;font-size:.8rem;padding:15px}
+
+.pastry-card{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:16px;border:1px solid #ddd;border-radius:14px;background:#fff;margin:10px 0}
+.pastry-card img{width:92px;height:92px;object-fit:cover;border-radius:12px;border:1px solid #ddd}
+.pastry-meta{color:var(--muted);font-size:.92rem;margin-top:5px}.qty-row{display:flex;align-items:center;gap:10px;margin:12px 0}.qty-row input{width:90px}
+
+/* ===== POLISHED HOME + BAKERY EXPERIENCE ===== */
+.home-intro{max-width:560px;margin:0 auto;color:#555;line-height:1.55}
+.order-paths{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px}
+.order-path{min-height:190px;border:0;border-radius:22px;padding:24px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 22px #00000012;transition:transform .15s ease,box-shadow .15s ease}
+.order-path:hover{transform:translateY(-2px);box-shadow:0 11px 28px #00000018}
+.order-path .path-icon{font-size:2.4rem}.order-path strong{display:block;font-size:1.35rem;margin:8px 0 5px}.order-path small{font-size:.95rem;line-height:1.4;color:#555}.order-path .path-action{font-weight:900;margin-top:18px}
+.coffee-path{background:#f3f7fb;border:1px solid #d9e5f0}.pastry-path{background:#fff7e8;border:1px solid #efd9ac}
+.secondary-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.secondary-actions button{font-weight:700;background:#fff}
+#pastryView{--bakery:#fffaf0;--bakery-accent:#b85d36;--bakery-gold:#e7b94b}
+#pastryView .panel{background:var(--bakery);border-color:#eadcc3}
+#pastryView .topbar{color:#6f3823}
+.pastry-kicker{text-transform:uppercase;letter-spacing:.13em;font-size:.76rem;font-weight:900;color:#9b684c;margin-bottom:7px}
+.pastry-lead{color:#65574e;line-height:1.5;margin:-4px 0 18px}
+.pastry-card{position:relative;overflow:hidden;grid-template-columns:1fr auto!important;border:1px solid #e6d7bd!important;background:#fff!important;box-shadow:0 4px 12px #6b3d2010;transition:transform .15s ease,box-shadow .15s ease}
+.pastry-card:hover{transform:translateY(-2px);box-shadow:0 8px 18px #6b3d201a}
+.pastry-card strong{font-size:1.08rem}.pastry-card .price{color:#7d452c;font-size:1.08rem}
+.pastry-card img{width:112px!important;height:112px!important;border-radius:16px!important}
+.pastry-select{display:inline-block;margin-top:10px;font-weight:900;color:#7d452c;font-size:.88rem;letter-spacing:.03em}
+#pastryView .choice.selected,#pastryView .chip.selected{outline:3px solid var(--bakery-gold);background:#fff8dc}
+#pastryView .primary{background:#7d452c;border-color:#7d452c}
+.bakery-section{background:#fff;border:1px solid #eadcc3;border-radius:16px;padding:16px;margin:14px 0}
+.bakery-section h3{margin-bottom:4px}.bakery-section .section-help{color:#76665b;font-size:.9rem;margin:0 0 12px}
+.pastry-total-box{background:#fff4d8!important;border:1px solid #ead3a0}
+.success-card{text-align:center;padding:8px 0}.success-icon{font-size:3.3rem;margin-bottom:5px}.success-card h2{font-size:1.8rem;margin-bottom:8px}.success-date{background:#fff;border:1px solid #eadcc3;border-radius:16px;padding:15px;margin:18px 0;font-size:1.08rem}
+.success-note{color:#66584e;line-height:1.5}
+@media(max-width:620px){.order-paths{grid-template-columns:1fr}.secondary-actions{grid-template-columns:1fr}.order-path{min-height:150px}}
+@media(max-width:520px){.home-grid{grid-template-columns:1fr}.hero-card,.panel,.chat-card{padding:17px}}</style></head>
 <body>
 <header class="site-header"><div class="logo"><span class="blue">GOT</span><span class="green">TAC</span><span class="red">OFF</span><span class="yellow">EE</span></div>
 <p>Cold Brews, Iced Drinks & More — Delivered</p></header>
 <main class="app-shell">
-<section id="homeView" class="view active"><div class="hero-card"><h1>How can we help? ☕</h1><p>Order delivery, browse the menu, or ask a question.</p>
-<div class="home-grid"><button class="big-btn" onclick="startOrder()">🛒<span>Place an Order</span></button><button class="big-btn" onclick="showMenu()">📋<span>View Menu</span></button>
-<button class="big-btn" onclick="showInfo()">🕐<span>Delivery Info</span></button><button class="big-btn" onclick="showChat()">💬<span>Ask a Question</span></button></div></div></section>
-<section id="orderView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Order</span></div><div id="orderContent"></div></section>
+<section id="homeView" class="view active"><div class="hero-card">
+<div class="pastry-kicker">Gotta Coffee • Madawaska</div>
+<h1>What sounds good today?</h1>
+<p class="home-intro">Fresh drinks delivered to you, plus made-ahead treats you can preorder for a future delivery date.</p>
+<div class="order-paths">
+<button class="order-path coffee-path" onclick="startOrder()"><span><span class="path-icon">☕</span><strong>ORDER COFFEE</strong><small>Build your favorite drink and choose from today's available delivery times.</small></span><span class="path-action">ORDER NOW →</span></button>
+<button class="order-path pastry-path" onclick="startPastryOrder()"><span><span class="path-icon">🧁</span><strong>PREORDER PASTRIES</strong><small>Choose freshly made treats, customize them, and select an available future delivery date.</small></span><span class="path-action">PREORDER →</span></button>
+</div>
+<div class="secondary-actions"><button onclick="showMenu()">📋 View Menu</button><button onclick="showInfo()">🕐 Delivery Info</button><button onclick="showChat()">💬 Ask a Question</button></div>
+</div></section>
+<section id="orderView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Coffee Order</span></div><div id="orderContent"></div></section>
+<section id="pastryView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Pastry Preorder</span></div><div id="pastryContent"></div></section>
 <section id="menuView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Menu</span></div><div id="menuContent"></div></section>
 <section id="infoView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Delivery</span></div><div id="infoContent"></div></section>
 <section id="chatView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Gotta Coffee Assistant</span></div>
@@ -17,12 +72,1050 @@
 <button onclick="chatQuick('What flavors do you have?')">Flavors</button><button onclick="chatQuick('What sizes do you have?')">Sizes</button></div>
 <form id="chatForm" class="chat-form"><input id="chatInput" autocomplete="off" placeholder="Ask a question..."><button>Send</button></form></div></section>
 </main><footer>© 2026 Gotta Coffee • Delivery Monday-Friday</footer>
-
-<script src="menu.js?v=20260910fb4"></script>
-<script>
-window.GOTTA_COFFEE_LIVE_MENU = null;
+<script>const MENU = {
+  "business": {
+    "name": "Gotta Coffee",
+    "tagline": "Cold Brews & Iced Macchiatos, Lattes, Matcha, & Gotta Coffee Chai delivered straight to you!",
+    "deliveryMinimum": 5.0,
+    "venmoDeliveryFee": 2.0,
+    "orderCutoff": "05:00",
+    "days": "Monday-Friday",
+    "orderingOpen": true,
+    "closedMessage": "Ordering is currently closed. Please check back later!",
+    "areas": {
+      "Madawaska": "Available"
+    },
+    "deliveryTimes": ["ASAP","9:00 AM","9:45 AM","10:30 AM","11:15 AM","12:00 PM","12:45 PM"],
+    "payments": [
+      "Cash",
+      "Venmo"
+    ]
+  },
+  "drinks": [
+    {
+      "sourceName": "Iced Macchiato",
+      "name": "Iced Macchiato",
+      "size": "Regular",
+      "price": 7.5,
+      "description": "A layered iced double espresso drink with your choice of flavor(s) & milk.",
+      "available": true
+    },
+    {
+      "sourceName": "Iced DECAF Macchiato",
+      "name": "Iced DECAF Macchiato",
+      "size": "Regular",
+      "price": 7.75,
+      "description": "A layered iced decaf double espresso drink with your choice of flavor(s) & milk.",
+      "available": true
+    },
+    {
+      "sourceName": "Iced Latte",
+      "name": "Iced Latte",
+      "size": "Regular",
+      "price": 7.5,
+      "description": "A mixed iced double espresso drink with your choice of flavor(s) & milk.",
+      "available": true
+    },
+    {
+      "sourceName": "Iced DECAF Latte",
+      "name": "Iced DECAF Latte",
+      "size": "Regular",
+      "price": 7.5,
+      "description": "A mixed iced decaf double espresso drink with your choice of flavor(s) & milk.",
+      "available": true
+    },
+    {
+      "sourceName": "Large Cold Brew",
+      "name": "Cold Brew",
+      "size": "Large",
+      "price": 5.75,
+      "description": "Gotta's Cold Brew, smooth, delicious, the best iced coffee you'll drink today.",
+      "available": true
+    },
+    {
+      "sourceName": "Large DECAF Cold Brew",
+      "name": "DECAF Cold Brew",
+      "size": "Large",
+      "price": 6.0,
+      "description": "Gotta's Cold Brew, smooth, delicious, the best iced coffee you'll drink today, but DECAF.",
+      "available": true
+    },
+    {
+      "sourceName": "XL Cold Brew",
+      "name": "Cold Brew",
+      "size": "XL",
+      "price": 10.75,
+      "description": "Gotta's Cold Brew, smooth, delicious, the best iced coffee you'll drink today, but in a big ol' wonton soup bucket!",
+      "available": true
+    },
+    {
+      "sourceName": "XL DECAF Cold Brew",
+      "name": "DECAF Cold Brew",
+      "size": "XL",
+      "price": 11.0,
+      "description": "Gotta's Cold Brew, smooth, delicious, the best iced coffee you'll drink today, but DECAF, and in a big ol' wonton soup bucket!",
+      "available": true
+    },
+    {
+      "sourceName": "Iced Matcha",
+      "name": "Iced Matcha",
+      "size": "Regular",
+      "price": 6.75,
+      "description": "Matcha-- green goodness.",
+      "available": true
+    },
+    {
+      "sourceName": "Iced Chai (naturally decaf)",
+      "name": "Iced Chai (naturally decaf)",
+      "size": "Regular",
+      "price": 6.75,
+      "description": "Our House Chai, made with all natural spices, it's sure to be one of your instant favorites.",
+      "available": true
+    },
+    {
+      "sourceName": "Large Carnival Lemonade",
+      "name": "Carnival Lemonade",
+      "size": "Large",
+      "price": 4.75,
+      "description": "Our lemonade is a cut above the rest. Lemon, sugar, water, flavors if you want them. Omg yum!",
+      "available": true
+    },
+    {
+      "sourceName": "XL Carnival Lemonade",
+      "name": "Carnival Lemonade",
+      "size": "XL",
+      "price": 9.5,
+      "description": "Our lemonade is a cut above the rest. Lemon, sugar, water, flavors if you want them, but in a big ol' wonton soup bucket!",
+      "available": true
+    },
+    {
+      "sourceName": "Small Kid’s Milk",
+      "name": "Kid’s Milk",
+      "size": "Small",
+      "price": 3.5,
+      "description": "Choose your milk, add flavor, shake it up, enjoy!",
+      "available": true
+    },
+    {
+      "sourceName": "Iced Sweet Black Tea",
+      "name": "Iced Sweet Black Tea",
+      "size": "Regular",
+      "price": 3.5,
+      "description": "Sweetened southern style black tea",
+      "available": true
+    },
+    {
+      "sourceName": "Iced Sweet Green Tea",
+      "name": "Iced Sweet Green Tea",
+      "size": "Regular",
+      "price": 3.5,
+      "description": "Sweetened southern style green tea",
+      "available": true
+    },
+    {
+      "sourceName": "At home kit - 5 Pack Nespresso variety coffee pod pack and 5 varitety flavors (please list allergies)",
+      "name": "At home kit - 5 Pack Nespresso variety coffee pod pack and 5 varitety flavors (please list allergies)",
+      "size": "Regular",
+      "price": 16.25,
+      "description": "Have a Nespresso Machine? Be your own barista! We'll package a work week's worth of Nespresso coffee pods and a variety of flavors you can use to make your own iced or hot coffee for yourself--just add milk, creamer, or have it black.",
+      "available": true
+    },
+    {
+      "sourceName": "At home kit - 10 Pack Nespresso variety coffee pod pack and 10 varitety flavors (please list allergies)",
+      "name": "At home kit - 10 Pack Nespresso variety coffee pod pack and 10 varitety flavors (please list allergies)",
+      "size": "Regular",
+      "price": 31.5,
+      "description": "Have a Nespresso Machine? Be your own barista! We'll package 10  Nespresso coffee pods and a variety of 10 flavors you can use to make your own iced or hot coffee for yourself--just add milk, creamer, or have it black.",
+      "available": true
+    }
+  ],
+  "foods": [
+    {
+      "name": "Sourdough Bread",
+      "price": 10.0,
+      "available": false
+    },
+    {
+      "name": "4 pack Of Chocolate Pookies (chocolate cookie with chocolate dream cream)",
+      "price": 11.0,
+      "available": false
+    },
+    {
+      "name": "Banana Bread Slice",
+      "price": 3.0,
+      "available": false
+    },
+    {
+      "name": "Zucchini Bread Slice",
+      "price": 3.0,
+      "available": false
+    }
+  ],
+  "milks": [
+    {
+      "name": "0.02",
+      "available": true
+    },
+    {
+      "name": "Half & Half",
+      "available": true
+    },
+    {
+      "name": "Almond",
+      "available": false
+    },
+    {
+      "name": "Oat Milk",
+      "available": true
+    }
+  ],
+  "flavors": [
+    {
+      "name": "Vanilla Caramel*",
+      "available": true
+    },
+    {
+      "name": "Maple Caramel*",
+      "available": true
+    },
+    {
+      "name": "Four Corners*",
+      "available": true
+    },
+    {
+      "name": "Hazelnut Mocha*",
+      "available": true
+    },
+    {
+      "name": "Sugar Cookie*",
+      "available": true
+    },
+    {
+      "name": "Chocolate Covered Strawberry*",
+      "available": true
+    },
+    {
+      "name": "Banana Split*",
+      "available": false
+    },
+    {
+      "name": "Birthday cake*",
+      "available": true
+    },
+    {
+      "name": "Wedding cake*",
+      "available": true
+    },
+    {
+      "name": "Benjamin's Campfire*",
+      "available": true
+    },
+    {
+      "name": "Waffle with a caramel bottom*",
+      "available": true
+    },
+    {
+      "name": "Almond Roca",
+      "available": true
+    },
+    {
+      "name": "Apple 🍋",
+      "available": true
+    },
+    {
+      "name": "Banana (SF) 🍋",
+      "available": false
+    },
+    {
+      "name": "Blood Orange 🍋",
+      "available": true
+    },
+    {
+      "name": "Blueberry (SF) 🍋",
+      "available": true
+    },
+    {
+      "name": "Blue Raspberry (SF) 🍋",
+      "available": true
+    },
+    {
+      "name": "Bourbon Caramel",
+      "available": true
+    },
+    {
+      "name": "Brown Sugar Cinnamon (SF)",
+      "available": true
+    },
+    {
+      "name": "Butter Pecan",
+      "available": true
+    },
+    {
+      "name": "Butterscotch (SF)",
+      "available": true
+    },
+    {
+      "name": "Caramel",
+      "available": true
+    },
+    {
+      "name": "Caramel (SF)",
+      "available": true
+    },
+    {
+      "name": "Cheesecake",
+      "available": true
+    },
+    {
+      "name": "Choc. Chip Cookie Dough (SF)",
+      "available": true
+    },
+    {
+      "name": "Classic Sweetener 🍋",
+      "available": true
+    },
+    {
+      "name": "Sugar Free Sweetener 🍋",
+      "available": true
+    },
+    {
+      "name": "Coconut  🍋",
+      "available": true
+    },
+    {
+      "name": "Coconut (SF) 🍋",
+      "available": true
+    },
+    {
+      "name": "Cupcake",
+      "available": true
+    },
+    {
+      "name": "English Toffee",
+      "available": true
+    },
+    {
+      "name": "English Toffee (SF)",
+      "available": true
+    },
+    {
+      "name": "Gingerbread",
+      "available": true
+    },
+    {
+      "name": "Gingerbread (SF)",
+      "available": true
+    },
+    {
+      "name": "Green Apple 🍋",
+      "available": true
+    },
+    {
+      "name": "Hazelnut",
+      "available": true
+    },
+    {
+      "name": "Hazelnut (SF)",
+      "available": true
+    },
+    {
+      "name": "Irish Cream (+SF)",
+      "available": true
+    },
+    {
+      "name": "Lavender 🍋",
+      "available": true
+    },
+    {
+      "name": "Lime 🍋",
+      "available": true
+    },
+    {
+      "name": "Macadamia Nut",
+      "available": true
+    },
+    {
+      "name": "Macadamia Nut (SF)",
+      "available": true
+    },
+    {
+      "name": "Mango 🍋",
+      "available": true
+    },
+    {
+      "name": "Maple",
+      "available": true
+    },
+    {
+      "name": "Peach 🍋",
+      "available": true
+    },
+    {
+      "name": "Peanut Butter",
+      "available": true
+    },
+    {
+      "name": "Peppermint",
+      "available": true
+    },
+    {
+      "name": "Peppermint (SF)",
+      "available": true
+    },
+    {
+      "name": "Pineapple (SF) 🍋",
+      "available": true
+    },
+    {
+      "name": "Pumpkin Pie",
+      "available": true
+    },
+    {
+      "name": "Pumpkin Pie (SF)",
+      "available": true
+    },
+    {
+      "name": "Pumpkin Spice",
+      "available": true
+    },
+    {
+      "name": "Raspberry (SF) 🍋",
+      "available": true
+    },
+    {
+      "name": "Shortbread",
+      "available": true
+    },
+    {
+      "name": "S’mores (SF)",
+      "available": true
+    },
+    {
+      "name": "Sour Gummy 🍋",
+      "available": true
+    },
+    {
+      "name": "Strawberry 🍋",
+      "available": true
+    },
+    {
+      "name": "Strawberry (SF) 🍋",
+      "available": true
+    },
+    {
+      "name": "Tiramisu",
+      "available": true
+    },
+    {
+      "name": "Toasted Marshmallow (SF)",
+      "available": true
+    },
+    {
+      "name": "Vanilla",
+      "available": true
+    },
+    {
+      "name": "Vanilla (SF)",
+      "available": true
+    },
+    {
+      "name": "Watermelon (SF) 🍋",
+      "available": true
+    }
+  ],
+  "bottoms": [
+    {
+      "name": "Caramel",
+      "available": true
+    },
+    {
+      "name": "Sugar Free Caramel",
+      "available": false
+    },
+    {
+      "name": "White Chocolate",
+      "available": true
+    },
+    {
+      "name": "Sugar Free White Chocolate",
+      "available": true
+    },
+    {
+      "name": "Mocha",
+      "available": true
+    },
+    {
+      "name": "Sugar Free Mocha",
+      "available": true
+    },
+    {
+      "name": "Strawberry",
+      "available": true
+    }
+  ],
+  "addons": [
+    {
+      "name": "Add a Double Shot of Espresso",
+      "price": 2.0,
+      "available": true
+    },
+    {
+      "name": "Add a Lotus Shot",
+      "price": 2.0,
+      "available": true
+    },
+    {
+      "name": "Add Cold Foam",
+      "price": 0.5,
+      "available": true
+    }
+  ]
+};
 </script>
-<script src="app.js?v=20260910fb4"></script>
+<script>const CONFIG={APPS_SCRIPT_URL:"https://script.google.com/macros/s/AKfycbyIl-X_GHpPnWbLh3c_tGTXi9R-Lh5sagPHP5Upwo6qzTHoo_JpQYRV3-EovNrHpf3F-w/exec",BUSINESS_EMAIL:"ordergottacoffee@gmail.com"};
+let cart=[],currentDrink=null,selectedOptions={milk:null,flavors:[],bottom:null,espresso:false,lotus:false,coldFoam:false};
+const $=id=>document.getElementById(id),money=n=>`$${Number(n||0).toFixed(2)}`;
+
+let LIVE_MENU_READY=false;
+let LIVE_MENU_REFRESHING=false;
+let LIVE_MENU_WAITERS=[];
+let LIVE_MENU_ATTEMPT=0;
+const LIVE_MENU_MAX_ATTEMPTS=4;
+
+function applyLiveMenu(live){
+  if(!live||typeof live!=="object")throw Error("Live menu response was empty.");
+  ["drinks","foods","milks","flavors","bottoms","addons"].forEach(k=>{
+    if(Array.isArray(live[k]))MENU[k]=live[k];
+  });
+  if(live.business)MENU.business={...(MENU.business||{}),...live.business};
+  LIVE_MENU_READY=true;
+  LIVE_MENU_REFRESHING=false;
+  LIVE_MENU_ATTEMPT=0;
+  try{localStorage.setItem("gottaCoffeeLastLiveMenu",JSON.stringify({savedAt:Date.now(),menu:live}));}catch(_){ }
+  const waiters=[...LIVE_MENU_WAITERS];
+  LIVE_MENU_WAITERS=[];
+  waiters.forEach(fn=>{try{fn(true)}catch(err){console.error(err)}});
+  setLiveMenuStatus("Today's menu is ready.");
+  console.log("Gotta Coffee live menu loaded.",live.updatedAt||"");
+}
+
+function useMenuResponse(response){
+  try{
+    if(!response || typeof response!=="object")return false;
+    if(response.ok===true && response.menu){ applyLiveMenu(response.menu); return true; }
+    if(Array.isArray(response.drinks) || response.business){ applyLiveMenu(response); return true; }
+  }catch(err){ console.error("Could not apply live menu:",err); }
+  return false;
+}
+
+function setLiveMenuStatus(message){
+  document.querySelectorAll("[data-live-menu-status]").forEach(el=>el.textContent=message);
+}
+
+function finishLiveMenuFailure(){
+  LIVE_MENU_REFRESHING=false;
+  const waiters=[...LIVE_MENU_WAITERS];
+  LIVE_MENU_WAITERS=[];
+  waiters.forEach(fn=>{try{fn(false)}catch(err){console.error(err)}});
+}
+
+// GitHub Pages version: load the live coffee menu from the Apps Script
+// public JSONP endpoint. This avoids CORS restrictions between GitHub and Google.
+let COFFEE_JSONP_TIMER=null;
+function requestLiveMenuFromServer(){
+  if(LIVE_MENU_READY)return;
+  LIVE_MENU_ATTEMPT++;
+  setLiveMenuStatus(`Checking today's menu… attempt ${LIVE_MENU_ATTEMPT} of ${LIVE_MENU_MAX_ATTEMPTS}`);
+
+  const callbackName="gottaCoffeeLiveMenuCallback";
+  const old=document.getElementById("gottaCoffeeMenuJsonp");
+  if(old)old.remove();
+  if(COFFEE_JSONP_TIMER)clearTimeout(COFFEE_JSONP_TIMER);
+
+  window[callbackName]=function(response){
+    if(COFFEE_JSONP_TIMER)clearTimeout(COFFEE_JSONP_TIMER);
+    const tag=document.getElementById("gottaCoffeeMenuJsonp");
+    if(tag)tag.remove();
+    if(useMenuResponse(response))return;
+    console.warn("Menu response arrived but was not usable.",response);
+    retryLiveMenu();
+  };
+
+  const script=document.createElement("script");
+  script.id="gottaCoffeeMenuJsonp";
+  script.src=CONFIG.APPS_SCRIPT_URL+"?action=menu&callback="+encodeURIComponent(callbackName)+"&_="+Date.now();
+  script.onerror=function(){
+    if(COFFEE_JSONP_TIMER)clearTimeout(COFFEE_JSONP_TIMER);
+    script.remove();
+    console.warn("Live coffee menu JSONP request failed.");
+    retryLiveMenu();
+  };
+  document.head.appendChild(script);
+
+  COFFEE_JSONP_TIMER=setTimeout(()=>{
+    const tag=document.getElementById("gottaCoffeeMenuJsonp");
+    if(tag)tag.remove();
+    console.warn("Live coffee menu request timed out.");
+    retryLiveMenu();
+  },8000);
+}
+
+function retryLiveMenu(){
+  if(LIVE_MENU_READY)return;
+  if(LIVE_MENU_ATTEMPT<LIVE_MENU_MAX_ATTEMPTS){
+    setLiveMenuStatus("Google took a moment — retrying automatically…");
+    setTimeout(requestLiveMenuFromServer,900);
+  }else{
+    console.warn("Fresh live menu did not arrive after automatic retries.");
+    finishLiveMenuFailure();
+  }
+}
+
+function refreshLiveMenu(callback){
+  if(typeof callback==="function")LIVE_MENU_WAITERS.push(callback);
+  if(LIVE_MENU_READY){
+    const waiters=[...LIVE_MENU_WAITERS]; LIVE_MENU_WAITERS=[];
+    waiters.forEach(fn=>{try{fn(true)}catch(err){console.error(err)}});
+    return;
+  }
+  if(LIVE_MENU_REFRESHING)return;
+  LIVE_MENU_REFRESHING=true;
+  LIVE_MENU_ATTEMPT=0;
+  requestLiveMenuFromServer();
+}
+
+document.addEventListener("DOMContentLoaded",()=>refreshLiveMenu());
+
+function showView(id){document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$(id).classList.add("active");scrollTo(0,0)}
+function goHome(){showView("homeView")}
+function renderOrderingClosed(){
+  $("orderContent").innerHTML=`<div class="panel"><h2>☕ Ordering is currently closed</h2><div class="notice">${escapeHtml(MENU.business.closedMessage||"Ordering is currently closed. Please check back later!")}</div><div class="actions"><button onclick="goHome()">← Home</button></div></div>`;
+}
+function renderLiveMenuError(targetId){
+  $(targetId).innerHTML=`<div class="panel"><h2>We couldn't refresh the current menu</h2><div class="notice">Please tap Retry so we can load today's prices and available options directly from Gotta Coffee.</div><div class="actions"><button class="primary" onclick="${targetId==='orderContent'?'startOrder()':targetId==='menuContent'?'showMenu()':'showInfo()'}">Retry</button><button onclick="goHome()">Home</button></div></div>`;
+}
+function startOrder(){
+  cart=[];
+  showView("orderView");
+  $("orderContent").innerHTML=`<div class="panel"><h2>Loading today's menu… ☕</h2><div class="notice" data-live-menu-status>Checking current prices and available options.</div></div>`;
+  refreshLiveMenu(ok=>{
+    if(!ok)return renderLiveMenuError("orderContent");
+    if(MENU.business && MENU.business.orderingOpen===false)return renderOrderingClosed();
+    renderDrinkPicker();
+  });
+}
+function showMenu(){
+  showView("menuView");
+  $("menuContent").innerHTML=`<div class="panel"><h2>Loading today's menu… ☕</h2><div class="notice" data-live-menu-status>Checking current prices and availability.</div></div>`;
+  refreshLiveMenu(ok=>ok?renderMenu():renderLiveMenuError("menuContent"));
+}
+function showInfo(){
+  showView("infoView");
+  $("infoContent").innerHTML=`<div class="panel"><h2>Loading delivery information…</h2><div class="notice" data-live-menu-status>Checking today's delivery options.</div></div>`;
+  refreshLiveMenu(ok=>ok?renderInfo():renderLiveMenuError("infoContent"));
+}
+function showChat(){showView("chatView");initChat()}
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
+function jsq(s){return String(s).replace(/\\/g,"\\\\").replace(/'/g,"\\'")}
+function availableDrinks(){return MENU.drinks.filter(d=>d.available)}
+function milkLabel(name){return String(name)==="0.02"?"2%":String(name)}
+function renderDrinkPicker(){let h=`<div class="panel"><h2>What would you like?</h2><div class="choices">`;
+availableDrinks().forEach(d=>h+=`<button class="choice" onclick='chooseDrink(${JSON.stringify(d).replace(/'/g,"&#39;")})'><span><strong>${escapeHtml(d.sourceName)}</strong><small>${escapeHtml(d.description)}</small></span><span class="price">${money(d.price)}</span></button>`);
+h+=`</div><div class="notice">🚗 Delivery orders must be at least <strong>${money(MENU.business.deliveryMinimum)}</strong> before delivery fees.</div></div>`;$("orderContent").innerHTML=h}
+function chooseDrink(d){currentDrink={...d};selectedOptions={milk:null,flavors:[],bottom:null,espresso:false,lotus:false,coldFoam:false};renderDrinkOptions()}
+function renderDrinkOptions(){const d=currentDrink;let h=`<div class="panel"><h2>${escapeHtml(d.sourceName)}</h2><p>${escapeHtml(d.description)}</p>`;
+h+=`<div class="option-group"><h3>Milk</h3><div class="choices">`;MENU.milks.filter(x=>x.available).forEach(m=>{const label=milkLabel(m.name);h+=`<button class="choice ${selectedOptions.milk===label?"selected":""}" onclick="selectMilk('${jsq(label)}')">${escapeHtml(label)}</button>`});h+=`</div></div>`;
+h+=`<div class="option-group"><h3>Flavors <small>(up to 4)</small></h3><div class="chips">`;MENU.flavors.filter(x=>x.available).forEach(f=>h+=`<button class="chip ${selectedOptions.flavors.includes(f.name)?"selected":""}" onclick="toggleFlavor('${jsq(f.name)}')">${escapeHtml(f.name)}</button>`);h+=`</div></div>`;
+if(MENU.bottoms.some(x=>x.available)){h+=`<div class="option-group"><h3>Bottom (optional)</h3><div class="choices"><button class="choice ${!selectedOptions.bottom?"selected":""}" onclick="selectBottom(null)">No Bottom</button>`;MENU.bottoms.filter(x=>x.available).forEach(b=>h+=`<button class="choice ${selectedOptions.bottom===b.name?"selected":""}" onclick="selectBottom('${jsq(b.name)}')">${escapeHtml(b.name)}</button>`);h+=`</div></div>`}
+h+=`<div class="option-group"><h3>Add-ons</h3><div class="choices">`;MENU.addons.filter(x=>x.available).forEach(a=>{let k=a.name.toLowerCase().includes("espresso")?"espresso":a.name.toLowerCase().includes("lotus")?"lotus":"coldFoam";h+=`<button class="choice ${selectedOptions[k]?"selected":""}" onclick="toggleAddon('${k}')"><span>${escapeHtml(a.name)}</span><span class="price">+${money(a.price)}</span></button>`});h+=`</div></div>`;
+h+=`<label>Special instructions</label><textarea id="drinkNotes" placeholder="Anything else for this drink?"></textarea><div class="actions"><button onclick="renderDrinkPicker()">← Change</button><button class="primary" onclick="addCurrentDrink()">Add to order →</button></div></div>`;$("orderContent").innerHTML=h}
+function selectMilk(v){selectedOptions.milk=v;renderDrinkOptions()} function selectBottom(v){selectedOptions.bottom=v;renderDrinkOptions()}
+function toggleFlavor(v){let i=selectedOptions.flavors.indexOf(v);if(i>=0)selectedOptions.flavors.splice(i,1);else if(selectedOptions.flavors.length<4)selectedOptions.flavors.push(v);else alert("You can choose up to 4 flavors.");renderDrinkOptions()}
+function toggleAddon(k){selectedOptions[k]=!selectedOptions[k];renderDrinkOptions()}
+function addonPrice(k){let a=MENU.addons.find(x=>(k==="espresso"&&x.name.toLowerCase().includes("espresso"))||(k==="lotus"&&x.name.toLowerCase().includes("lotus"))||(k==="coldFoam"&&x.name.toLowerCase().includes("foam")));return a?.price||0}
+function addCurrentDrink(){let notes=$("drinkNotes")?.value||"";cart.push({...currentDrink,milk:selectedOptions.milk,flavors:[...selectedOptions.flavors],bottom:selectedOptions.bottom,espresso:selectedOptions.espresso,lotus:selectedOptions.lotus,coldFoam:selectedOptions.coldFoam,notes,itemPrice:currentDrink.price+(selectedOptions.espresso?addonPrice("espresso"):0)+(selectedOptions.lotus?addonPrice("lotus"):0)+(selectedOptions.coldFoam?addonPrice("coldFoam"):0)});renderCart()}
+function cartSubtotal(){return cart.reduce((s,i)=>s+i.itemPrice,0)}
+function renderCart(){let h=`<div class="panel"><h2>Your Order</h2>`;cart.forEach((i,n)=>{h+=`<div class="summary"><div class="summary-row"><strong>${escapeHtml(i.sourceName)}</strong><strong>${money(i.itemPrice)}</strong></div>${i.milk?`<div>${escapeHtml(i.milk)}</div>`:""}${i.flavors.length?`<div>Flavors: ${i.flavors.map(escapeHtml).join(", ")}</div>`:""}${i.bottom?`<div>Bottom: ${escapeHtml(i.bottom)}</div>`:""}${i.espresso?`<div>Double espresso</div>`:""}${i.lotus?`<div>Lotus shot</div>`:""}${i.coldFoam?`<div>Cold foam</div>`:""}${i.notes?`<div>Notes: ${escapeHtml(i.notes)}</div>`:""}<button class="danger" onclick="removeItem(${n})">Remove</button></div>`});
+let sub=cartSubtotal();h+=`<div class="summary"><div class="summary-row"><span>Subtotal</span><strong>${money(sub)}</strong></div></div><div class="actions"><button onclick="renderDrinkPicker()">+ Add another</button><button class="primary" ${cart.length?"":"disabled"} onclick="checkout()">Checkout →</button></div></div>`;$("orderContent").innerHTML=h}
+function removeItem(i){cart.splice(i,1);renderCart()} function checkout(){let s=cartSubtotal();if(s<MENU.business.deliveryMinimum){alert(`Delivery minimum is ${money(MENU.business.deliveryMinimum)}. Add ${money(MENU.business.deliveryMinimum-s)} more.`);return}renderCheckout()}
+function renderCheckout(){
+  if(MENU.business && MENU.business.orderingOpen===false){startOrder();return}
+  let s=cartSubtotal();
+  const towns=Object.keys(MENU.business.areas||{});
+  const times=Array.isArray(MENU.business.deliveryTimes)?MENU.business.deliveryTimes:[];
+  if(!towns.length){$("orderContent").innerHTML=`<div class="panel"><h2>Delivery unavailable</h2><div class="notice">No delivery towns are currently available. Please check back later.</div><div class="actions"><button onclick="goHome()">← Home</button></div></div>`;return}
+  if(!times.length){$("orderContent").innerHTML=`<div class="panel"><h2>Delivery unavailable</h2><div class="notice">No delivery times are currently available. Please check back later.</div><div class="actions"><button onclick="goHome()">← Home</button></div></div>`;return}
+  $("orderContent").innerHTML=`<div class="panel"><h2>Delivery & Checkout</h2><div class="notice">Minimum: <strong>${money(MENU.business.deliveryMinimum)}</strong> before fees. Cash delivery is free; Venmo adds ${money(MENU.business.venmoDeliveryFee)}.</div>
+  <label>Name *</label><input id="custName"><label>Phone *</label><input id="custPhone" type="tel"><label>Email *</label><input id="custEmail" type="email" required><label>Delivery town *</label><select id="town" required><option value="">Choose...</option>${towns.map(x=>`<option>${escapeHtml(x)}</option>`).join("")}</select><label>Delivery address *</label><input id="address"><label>Delivery time *</label><select id="deliveryTime" required><option value="">Choose...</option>${times.map(x=>`<option>${escapeHtml(x)}</option>`).join("")}</select><label>Payment *</label><select id="payment"><option value="">Choose...</option><option>Cash</option><option>Venmo</option></select>
+  <div class="notice payment-instructions">Your total is calculated below. If paying cash, change is available up to $50. If paying Venmo, the link is available by clicking the purple neon Venmo on the previous page, or I can send it to your email/text. By placing this sovereign food order, I understand that I will be responsible for payment upon delivery. Reach out to <strong>ordergottacoffee@gmail.com</strong>!</div>
+  <label>Order notes</label><textarea id="orderNotes"></textarea>
+  <div class="summary"><div class="summary-row"><span>Subtotal</span><strong>${money(s)}</strong></div><div class="summary-row"><span>Delivery</span><strong id="deliveryFee">${money(0)}</strong></div><div class="summary-row total"><span>Total</span><strong id="checkoutTotal">${money(s)}</strong></div></div><div class="actions"><button onclick="renderCart()">← Back</button><button class="primary" onclick="submitOrder()">Place Order</button></div></div>`;
+  $("payment").onchange=updateCheckoutTotal;
+}
+
+function updateCheckoutTotal(){let f=$("payment").value==="Venmo"?MENU.business.venmoDeliveryFee:0;$("deliveryFee").textContent=money(f);$("checkoutTotal").textContent=money(cartSubtotal()+f)}
+function postOrderViaForm(order){
+let frame=$("gcOrderSubmitFrame");
+if(!frame){
+frame=document.createElement("iframe");
+frame.id="gcOrderSubmitFrame";
+frame.name="gcOrderSubmitFrame";
+frame.style.display="none";
+document.body.appendChild(frame);
+}
+let form=document.createElement("form");
+form.method="POST";
+form.action=CONFIG.APPS_SCRIPT_URL;
+form.target="gcOrderSubmitFrame";
+form.style.display="none";
+
+let payload=document.createElement("input");
+payload.type="hidden";
+payload.name="payload";
+payload.value=JSON.stringify(order);
+form.appendChild(payload);
+
+document.body.appendChild(form);
+form.submit();
+setTimeout(()=>form.remove(),1500);
+}
+
+async function submitOrder(){
+let p=$("payment").value,s=cartSubtotal(),email=$("custEmail").value.trim(),d={customer:{name:$("custName").value.trim(),phone:$("custPhone").value.trim(),email},delivery:{town:$("town").value,address:$("address").value.trim(),time:$("deliveryTime").value},payment:p,notes:$("orderNotes").value.trim(),items:cart.map(i=>({sourceName:i.sourceName,name:i.name,size:i.size,price:i.price,itemPrice:i.itemPrice,milk:i.milk,flavors:i.flavors,bottom:i.bottom,espresso:i.espresso,lotus:i.lotus,coldFoam:i.coldFoam,notes:i.notes})),subtotal:s,deliveryFee:p==="Venmo"?MENU.business.venmoDeliveryFee:0,total:s+(p==="Venmo"?MENU.business.venmoDeliveryFee:0),submittedAt:new Date().toISOString()};
+
+if(!d.customer.name||!d.customer.phone||!d.customer.email||!d.delivery.town||!d.delivery.address||!d.delivery.time||!p){alert("Please complete all required fields, including delivery time and email.");return}
+if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.customer.email)){alert("Please enter a valid email address.");return}
+if(s<MENU.business.deliveryMinimum){alert(`Your order is below the ${money(MENU.business.deliveryMinimum)} delivery minimum.`);return}
+if(!CONFIG.APPS_SCRIPT_URL){localStorage.setItem("lastGottaCoffeeOrder",JSON.stringify(d));return showConfirmation(d,"LOCAL-TEST")}
+
+try{
+localStorage.setItem("lastGottaCoffeeOrder",JSON.stringify(d));
+postOrderViaForm(d);
+setTimeout(()=>showConfirmation(d,"SENT"),500);
+}catch(e){
+console.error("Gotta Coffee order submission failed:",e);
+alert(`The order could not be sent automatically.\n\nTechnical detail: ${e.message||e}`);
+}
+}
+function showConfirmation(d,n){$("orderContent").innerHTML=`<div class="panel"><h2>☕ Order Received!</h2><div class="notice"><strong>Order #${escapeHtml(n)}</strong></div><p>Thanks, ${escapeHtml(d.customer.name)}! We received your order.</p><div class="summary">${d.items.map(i=>`<div class="summary-row"><span>${escapeHtml(i.sourceName)}</span><strong>${money(i.itemPrice)}</strong></div>`).join("")}<div class="summary-row"><span>Delivery</span><span>${money(d.deliveryFee)}</span></div><div class="summary-row total"><span>Total</span><strong>${money(d.total)}</strong></div></div><p>Delivery time: <strong>${escapeHtml(d.delivery.time)}</strong></p><p>Payment: <strong>${escapeHtml(d.payment)}</strong></p><div class="actions"><button onclick="goHome()">Done</button><button onclick="startOrder()">New Order</button></div></div>`;cart=[]}
+function renderMenu(){let h=`<div class="panel"><h2>Drinks</h2>`;availableDrinks().forEach(d=>h+=`<div class="menu-item"><h3>${escapeHtml(d.sourceName)} <span class="price">${money(d.price)}</span></h3><p>${escapeHtml(d.description)}</p></div>`);h+=`<h2>Milk Choices</h2><div class="chips">${MENU.milks.filter(x=>x.available).map(x=>`<span class="chip">${escapeHtml(milkLabel(x.name))}</span>`).join("")}</div><h2>Flavors</h2><div class="chips">${MENU.flavors.filter(x=>x.available).map(x=>`<span class="chip">${escapeHtml(x.name)}</span>`).join("")}</div><h2>Add-ons</h2>`;MENU.addons.filter(x=>x.available).forEach(x=>h+=`<div class="menu-item"><strong>${escapeHtml(x.name)}</strong> <span class="price">+${money(x.price)}</span></div>`);h+=`</div>`;$("menuContent").innerHTML=h}
+function renderInfo(){
+  const towns=Object.keys(MENU.business.areas||{});
+  const times=Array.isArray(MENU.business.deliveryTimes)?MENU.business.deliveryTimes:[];
+  const status=MENU.business.orderingOpen===false?`<div class="notice"><strong>Ordering is currently closed.</strong> ${escapeHtml(MENU.business.closedMessage||"")}</div>`:"";
+  $("infoContent").innerHTML=`<div class="panel"><h2>Delivery Information</h2>${status}<div class="notice">🚗 <strong>Minimum delivery order: ${money(MENU.business.deliveryMinimum||5)}</strong> before delivery fees.</div><p><strong>Monday-Friday</strong></p><p><strong>Currently available towns:</strong> ${towns.length?towns.map(escapeHtml).join(", "):"None"}</p><p><strong>Currently available delivery times:</strong> ${times.length?times.map(escapeHtml).join(", "):"None"}</p><p>Cash delivery is free; Venmo delivery is +${money(MENU.business.venmoDeliveryFee||2)}. No Canada deliveries.</p><button class="primary" onclick="startOrder()" ${MENU.business.orderingOpen===false?"disabled":""}>Start an Order</button></div>`;
+}
 
 
+/* =========================
+   PASTRY PREORDER UI
+   ========================= */
+let PASTRY_MENU=null;
+let pastryCart=[];
+let currentPastry=null;
+let pastrySelections={quantity:1,addons:[],substitutions:[],notes:""};
+
+function startPastryOrder(){
+  pastryCart=[];
+  showView("pastryView");
+  $("pastryContent").innerHTML=`<div class="panel"><h2>Loading pastry preorders… 🧁</h2><div class="notice">Checking available desserts, dates, and delivery times.</div></div>`;
+
+  const callbackName="gottaCoffeePastryMenuCallback";
+  const old=document.getElementById("gottaCoffeePastryJsonp");
+  if(old)old.remove();
+
+  let finished=false;
+  const timer=setTimeout(()=>{
+    if(finished)return;
+    finished=true;
+    const tag=document.getElementById("gottaCoffeePastryJsonp");
+    if(tag)tag.remove();
+    $("pastryContent").innerHTML=`<div class="panel"><h2>We couldn't load pastry preorders</h2><div class="notice">Please refresh and try again.</div><div class="actions"><button class="primary" onclick="startPastryOrder()">Retry</button><button onclick="goHome()">Home</button></div></div>`;
+  },8000);
+
+  window[callbackName]=function(menu){
+    if(finished)return;
+    finished=true;
+    clearTimeout(timer);
+    const tag=document.getElementById("gottaCoffeePastryJsonp");
+    if(tag)tag.remove();
+
+    PASTRY_MENU=(menu && menu.ok===true && menu.menu)?menu.menu:menu;
+    if(!PASTRY_MENU || !PASTRY_MENU.business){
+      $("pastryContent").innerHTML=`<div class="panel"><h2>Pastry menu unavailable</h2><div class="notice">Please try again in a moment.</div><div class="actions"><button class="primary" onclick="startPastryOrder()">Retry</button><button onclick="goHome()">Home</button></div></div>`;
+      return;
+    }
+    if(PASTRY_MENU.business.preorderingOpen===false){
+      $("pastryContent").innerHTML=`<div class="panel"><h2>🧁 Pastry preordering is closed</h2><div class="notice">${escapeHtml(PASTRY_MENU.business.closedMessage||"Please check back later!")}</div><div class="actions"><button onclick="goHome()">← Home</button></div></div>`;
+      return;
+    }
+    renderPastryPicker();
+  };
+
+  const script=document.createElement("script");
+  script.id="gottaCoffeePastryJsonp";
+  script.src=CONFIG.APPS_SCRIPT_URL+"?action=pastryMenu&callback="+encodeURIComponent(callbackName)+"&_="+Date.now();
+  script.onerror=function(){
+    if(finished)return;
+    finished=true;
+    clearTimeout(timer);
+    script.remove();
+    console.error("Pastry menu JSONP request failed.");
+    $("pastryContent").innerHTML=`<div class="panel"><h2>We couldn't load pastry preorders</h2><div class="notice">Please refresh and try again.</div><div class="actions"><button class="primary" onclick="startPastryOrder()">Retry</button><button onclick="goHome()">Home</button></div></div>`;
+  };
+  document.head.appendChild(script);
+}
+function availablePastries(){
+  return (PASTRY_MENU?.desserts||[]).filter(x=>x.available);
+}
+
+function renderPastryPicker(){
+  const desserts=availablePastries();
+  if(!desserts.length){
+    $("pastryContent").innerHTML=`<div class="panel"><h2>🧁 Pastry Preorders</h2><div class="notice">There aren't any pastries available for preorder right now. Please check back soon!</div><div class="actions"><button onclick="goHome()">← Home</button></div></div>`;
+    return;
+  }
+
+  let h=`<div class="panel"><div class="pastry-kicker">Freshly made for your preorder date</div><h2>🧁 Choose Your Treat</h2><p class="pastry-lead">Pick something delicious, then make it exactly how you want it.</p>`;
+  desserts.forEach((d,i)=>{
+    h+=`<button class="pastry-card" style="width:100%;text-align:left" onclick="choosePastry(${i})"><span><strong>${escapeHtml(d.name)}</strong>${d.category?`<div class="pastry-meta">${escapeHtml(d.category)}</div>`:""}${d.description?`<small>${escapeHtml(d.description)}</small>`:""}<div class="price" style="margin-top:7px">${money(d.price)}</div><span class="pastry-select">SELECT →</span></span>${d.imageUrl?`<img src="${escapeHtml(d.imageUrl)}" alt="${escapeHtml(d.name)}">`:""}</button>`;
+  });
+  h+=`<div class="actions"><button onclick="goHome()">← Home</button>${pastryCart.length?`<button class="primary" onclick="renderPastryCart()">View preorder (${pastryCart.length})</button>`:""}</div></div>`;
+  $("pastryContent").innerHTML=h;
+}
+
+function choosePastry(index){
+  currentPastry={...availablePastries()[index]};
+  pastrySelections={quantity:1,addons:[],substitutions:[],notes:""};
+  renderPastryOptions();
+}
+
+function renderPastryOptions(){
+  const d=currentPastry;
+  const addons=(PASTRY_MENU?.addons||[]).filter(x=>x.available);
+  const substitutions=(PASTRY_MENU?.substitutions||[]).filter(x=>x.available);
+  const max=d.maxQuantity>0?d.maxQuantity:99;
+
+  let h=`<div class="panel"><h2>${escapeHtml(d.name)}</h2>${d.description?`<p>${escapeHtml(d.description)}</p>`:""}<div class="price">${money(d.price)} each</div>`;
+  h+=`<div class="option-group"><h3>Quantity</h3><div class="qty-row"><input id="pastryQty" type="number" min="1" max="${max}" value="${pastrySelections.quantity}" onchange="setPastryQuantity(this.value)"><span>${d.maxQuantity>0?`Maximum ${d.maxQuantity}`:""}</span></div></div>`;
+
+  if(addons.length){
+    h+=`<div class="option-group"><h3>Add-Ons <small>(optional)</small></h3><div class="choices">`;
+    addons.forEach((a,i)=>h+=`<button class="choice ${pastrySelections.addons.includes(i)?"selected":""}" onclick="togglePastryAddon(${i})"><span>${escapeHtml(a.name)}</span><span class="price">${a.price?`+${money(a.price)}`:"Included"}</span></button>`);
+    h+=`</div></div>`;
+  }
+
+  if(substitutions.length){
+    h+=`<div class="option-group"><h3>Substitutions <small>(optional)</small></h3><div class="choices">`;
+    substitutions.forEach((s,i)=>h+=`<button class="choice ${pastrySelections.substitutions.includes(i)?"selected":""}" onclick="togglePastrySubstitution(${i})"><span>${escapeHtml(s.name)}</span><span class="price">${s.priceAdjustment?`${s.priceAdjustment>0?"+":""}${money(s.priceAdjustment)}`:"No charge"}</span></button>`);
+    h+=`</div></div>`;
+  }
+
+  if(PASTRY_MENU.business.allowSpecialInstructions!==false){
+    h+=`<label>Special instructions</label><textarea id="pastryNotes" placeholder="Allergies, requests, or anything else we should know?">${escapeHtml(pastrySelections.notes)}</textarea>`;
+  }
+
+  h+=`<div class="actions"><button onclick="renderPastryPicker()">← Change</button><button class="primary" onclick="addCurrentPastry()">Add to preorder →</button></div></div>`;
+  $("pastryContent").innerHTML=h;
+}
+
+function setPastryQuantity(v){
+  let q=Math.max(1,parseInt(v||1,10));
+  if(currentPastry.maxQuantity>0)q=Math.min(q,currentPastry.maxQuantity);
+  pastrySelections.quantity=q;
+}
+
+function togglePastryAddon(i){
+  const p=pastrySelections.addons.indexOf(i);
+  if(p>=0)pastrySelections.addons.splice(p,1); else pastrySelections.addons.push(i);
+  pastrySelections.notes=$("pastryNotes")?.value||pastrySelections.notes;
+  renderPastryOptions();
+}
+
+function togglePastrySubstitution(i){
+  const p=pastrySelections.substitutions.indexOf(i);
+  if(p>=0)pastrySelections.substitutions.splice(p,1); else pastrySelections.substitutions.push(i);
+  pastrySelections.notes=$("pastryNotes")?.value||pastrySelections.notes;
+  renderPastryOptions();
+}
+
+function addCurrentPastry(){
+  setPastryQuantity($("pastryQty")?.value||1);
+  pastrySelections.notes=$("pastryNotes")?.value||"";
+
+  const liveAddons=(PASTRY_MENU.addons||[]).filter(x=>x.available);
+  const liveSubs=(PASTRY_MENU.substitutions||[]).filter(x=>x.available);
+  const addons=pastrySelections.addons.map(i=>liveAddons[i]).filter(Boolean);
+  const substitutions=pastrySelections.substitutions.map(i=>liveSubs[i]).filter(Boolean);
+
+  const perItem=Number(currentPastry.price||0)
+    +addons.reduce((s,a)=>s+Number(a.price||0),0)
+    +substitutions.reduce((s,x)=>s+Number(x.priceAdjustment||0),0);
+
+  pastryCart.push({
+    dessert:currentPastry.name,
+    quantity:pastrySelections.quantity,
+    basePrice:Number(currentPastry.price||0),
+    addons:addons.map(a=>({name:a.name,price:Number(a.price||0)})),
+    substitutions:substitutions.map(s=>({name:s.name,priceAdjustment:Number(s.priceAdjustment||0)})),
+    notes:pastrySelections.notes,
+    itemPrice:perItem*pastrySelections.quantity
+  });
+
+  renderPastryCart();
+}
+
+function pastrySubtotal(){
+  return pastryCart.reduce((s,i)=>s+Number(i.itemPrice||0),0);
+}
+
+function pastryItemCount(){
+  return pastryCart.reduce((s,i)=>s+Number(i.quantity||0),0);
+}
+
+function renderPastryCart(){
+  let h=`<div class="panel"><div class="pastry-kicker">Almost there</div><h2>Your Treat Box 🧁</h2><p class="pastry-lead">Review your goodies before choosing delivery.</p>`;
+  pastryCart.forEach((i,n)=>{
+    h+=`<div class="summary"><div class="summary-row"><strong>${i.quantity} × ${escapeHtml(i.dessert)}</strong><strong>${money(i.itemPrice)}</strong></div>${i.addons.length?`<div>Add-Ons: ${i.addons.map(a=>escapeHtml(a.name)).join(", ")}</div>`:""}${i.substitutions.length?`<div>Substitutions: ${i.substitutions.map(s=>escapeHtml(s.name)).join(", ")}</div>`:""}${i.notes?`<div>Notes: ${escapeHtml(i.notes)}</div>`:""}<button class="danger" onclick="removePastryItem(${n})">Remove</button></div>`;
+  });
+
+  const sub=pastrySubtotal();
+  h+=`<div class="summary"><div class="summary-row"><span>Subtotal</span><strong>${money(sub)}</strong></div></div><div class="actions"><button onclick="renderPastryPicker()">+ Add another</button><button class="primary" ${pastryCart.length?"":"disabled"} onclick="renderPastryCheckout()">Checkout →</button></div></div>`;
+  $("pastryContent").innerHTML=h;
+}
+
+function removePastryItem(i){
+  pastryCart.splice(i,1);
+  pastryCart.length?renderPastryCart():renderPastryPicker();
+}
+
+function renderPastryCheckout(){
+  const business=PASTRY_MENU.business||{};
+  const towns=Object.keys(business.areas||{});
+  const dates=Array.isArray(business.deliveryOptions)?business.deliveryOptions:[];
+  const sub=pastrySubtotal();
+
+  if(business.maximumItemsPerOrder>0 && pastryItemCount()>business.maximumItemsPerOrder){
+    alert(`Pastry preorders are limited to ${business.maximumItemsPerOrder} items per order.`);
+    return;
+  }
+  if(sub<Number(business.minimumOrder||0)){
+    alert(`The pastry preorder minimum is ${money(business.minimumOrder)}.`);
+    return;
+  }
+  if(!towns.length || !dates.length){
+    $("pastryContent").innerHTML=`<div class="panel"><h2>Pastry delivery unavailable</h2><div class="notice">There are no pastry delivery dates available right now. Please check back later.</div><div class="actions"><button onclick="renderPastryCart()">← Back</button></div></div>`;
+    return;
+  }
+
+  $("pastryContent").innerHTML=`<div class="panel"><div class="pastry-kicker">Final step</div><h2>Pastry Delivery & Checkout 🧁</h2><p class="pastry-lead">Choose when and where you'd like your treats delivered.</p>
+  <div class="bakery-section"><h3>📅 When would you like it?</h3><p class="section-help">Only currently available preorder dates and times are shown.</p>
+  <label>Delivery date *</label><select id="pastryDeliveryDate" required onchange="updatePastryTimes()"><option value="">Choose...</option>${dates.map(x=>`<option value="${escapeHtml(x.date)}">${escapeHtml(x.label)}</option>`).join("")}</select>
+  <label>Delivery time *</label><select id="pastryDeliveryTime" required disabled><option value="">Choose a date first...</option></select></div>
+  <div class="bakery-section"><h3>🚗 Where are we bringing it?</h3>
+  <label>Name *</label><input id="pastryCustName" autocomplete="name">
+  <label>Phone *</label><input id="pastryCustPhone" type="tel" autocomplete="tel">
+  <label>Email *</label><input id="pastryCustEmail" type="email" autocomplete="email" required>
+  <label>Delivery town *</label><select id="pastryTown" required><option value="">Choose...</option>${towns.map(x=>`<option>${escapeHtml(x)}</option>`).join("")}</select>
+  <label>Delivery address *</label><input id="pastryAddress" autocomplete="street-address"></div>
+  <div class="bakery-section"><h3>💵 Payment</h3><label>Payment method *</label><select id="pastryPayment" onchange="updatePastryCheckoutTotal()"><option value="">Choose...</option><option>Cash</option><option>Venmo</option></select>
+  <label>Order notes <small>(optional)</small></label><textarea id="pastryOrderNotes" placeholder="Anything else we should know about the overall order?"></textarea></div>
+  <div class="notice">We'll re-check your selected date and time when the preorder is submitted so a slot that has become unavailable can't be accepted accidentally.</div>
+  <div class="summary pastry-total-box"><div class="summary-row"><span>Subtotal</span><strong>${money(sub)}</strong></div><div class="summary-row"><span>Delivery</span><strong id="pastryDeliveryFee">${money(0)}</strong></div><div class="summary-row total"><span>Total</span><strong id="pastryCheckoutTotal">${money(sub)}</strong></div></div>
+  <div class="actions"><button onclick="renderPastryCart()">← Back</button><button class="primary" onclick="submitPastryOrder()">Place Preorder 🧁</button></div></div>`;
+}
+
+function updatePastryTimes(){
+  const date=$("pastryDeliveryDate").value;
+  const option=(PASTRY_MENU.business.deliveryOptions||[]).find(x=>x.date===date);
+  const select=$("pastryDeliveryTime");
+  const times=option?.times||[];
+  select.disabled=!times.length;
+  select.innerHTML=times.length?`<option value="">Choose...</option>${times.map(x=>`<option>${escapeHtml(x)}</option>`).join("")}`:`<option value="">No times available</option>`;
+}
+
+function pastryDeliveryFee(){
+  // Match the current coffee payment rule unless/until a pastry-specific fee is added.
+  return $("pastryPayment")?.value==="Venmo"?Number(MENU.business.venmoDeliveryFee||2):0;
+}
+
+function updatePastryCheckoutTotal(){
+  const fee=pastryDeliveryFee();
+  $("pastryDeliveryFee").textContent=money(fee);
+  $("pastryCheckoutTotal").textContent=money(pastrySubtotal()+fee);
+}
+
+function submitPastryOrder(){
+  const payment=$("pastryPayment").value;
+  const fee=pastryDeliveryFee();
+  const subtotal=pastrySubtotal();
+
+  const d={
+    orderType:"pastry",
+    customer:{
+      name:$("pastryCustName").value.trim(),
+      phone:$("pastryCustPhone").value.trim(),
+      email:$("pastryCustEmail").value.trim()
+    },
+    delivery:{
+      town:$("pastryTown").value,
+      address:$("pastryAddress").value.trim(),
+      date:$("pastryDeliveryDate").value,
+      time:$("pastryDeliveryTime").value
+    },
+    payment:payment,
+    notes:$("pastryOrderNotes").value.trim(),
+    items:pastryCart,
+    subtotal:subtotal,
+    deliveryFee:fee,
+    total:subtotal+fee,
+    submittedAt:new Date().toISOString()
+  };
+
+  if(!d.customer.name||!d.customer.phone||!d.customer.email||!d.delivery.town||!d.delivery.address||!d.delivery.date||!d.delivery.time||!payment){
+    alert("Please complete all required fields, including delivery date and time.");
+    return;
+  }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.customer.email)){
+    alert("Please enter a valid email address.");
+    return;
+  }
+
+  try{
+    localStorage.setItem("lastGottaCoffeePastryOrder",JSON.stringify(d));
+    postOrderViaForm(d);
+    setTimeout(()=>showPastryConfirmation(d,"SENT"),500);
+  }catch(e){
+    console.error("Gotta Coffee pastry submission failed:",e);
+    alert(`The pastry preorder could not be sent automatically.\n\nTechnical detail: ${e.message||e}`);
+  }
+}
+
+function formatPastryDateForCustomer(dateKey){
+  const parts=String(dateKey||"").split("-").map(Number);
+  if(parts.length!==3 || parts.some(x=>!Number.isFinite(x)))return String(dateKey||"");
+  const dt=new Date(parts[0],parts[1]-1,parts[2],12,0,0);
+  return dt.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+}
+
+function showPastryConfirmation(d,n){
+  const prettyDate=formatPastryDateForCustomer(d.delivery.date);
+  $("pastryContent").innerHTML=`<div class="panel"><div class="success-card"><div class="success-icon">🧁</div><div class="pastry-kicker">Preorder received</div><h2>Your preorder is in!</h2><p class="success-note">Thanks, ${escapeHtml(d.customer.name)}! We've received your preorder. Your official order number and full details are being sent to your email.</p><div class="success-date"><strong>${escapeHtml(prettyDate)}</strong><br>${escapeHtml(d.delivery.time)}</div></div><div class="summary pastry-total-box">${d.items.map(i=>`<div class="summary-row"><span>${i.quantity} × ${escapeHtml(i.dessert)}</span><strong>${money(i.itemPrice)}</strong></div>`).join("")}<div class="summary-row"><span>Delivery</span><span>${money(d.deliveryFee)}</span></div><div class="summary-row total"><span>Total</span><strong>${money(d.total)}</strong></div></div><p class="success-note" style="text-align:center">Payment: <strong>${escapeHtml(d.payment)}</strong><br>We'll see you then! 💛</p><div class="actions"><button onclick="goHome()">Done</button><button class="primary" onclick="startPastryOrder()">Start Another Preorder</button></div></div>`;
+  pastryCart=[];
+}
+
+
+function initChat(){
+if($("chatMessages").children.length)return;
+addBot("Hi! 👋 I'm the Gotta Coffee assistant. I can answer questions about our menu, flavors, delivery, and ordering.");
+let wrap=document.createElement("div");
+wrap.style.margin="12px 0 18px";
+wrap.innerHTML=`<button class="primary" type="button" onclick="startOrder()">☕ Place an Order</button>`;
+$("chatMessages").appendChild(wrap);
+}
+function addBubble(t,c){let d=document.createElement("div");d.className=`bubble ${c}`;d.innerHTML=escapeHtml(t).replace(/\n/g,"<br>");$("chatMessages").appendChild(d);$("chatMessages").scrollTop=$("chatMessages").scrollHeight}
+function addBot(t){addBubble(t,"bot")}function addUser(t){addBubble(t,"user")}function chatQuick(t){addUser(t);answerChat(t)}
+$("chatForm").onsubmit=e=>{e.preventDefault();let t=$("chatInput").value.trim();if(!t)return;$("chatInput").value="";addUser(t);answerChat(t)}
+function answerChat(raw){let t=raw.toLowerCase();if(t.includes("minimum")||t.includes("$5"))return addBot("Our delivery minimum is $5.00 before delivery fees.");if(t.includes("hour")||t.includes("open")||t.includes("close")){if(MENU.business.orderingOpen===false)return addBot(MENU.business.closedMessage||"Ordering is currently closed.");let towns=Object.keys(MENU.business.areas||{}).join(", ")||"no towns";let times=(MENU.business.deliveryTimes||[]).join(", ")||"no times";return addBot(`We deliver Monday-Friday. Currently available towns: ${towns}. Available delivery times: ${times}.`);}if(t.includes("venmo"))return addBot("Cash delivery is free. Venmo delivery adds $2.00.");if(t.includes("canada"))return addBot("Sorry — we do not currently deliver to Canada.");if(t.includes("flavor"))return addBot(`We currently have ${MENU.flavors.filter(x=>x.available).length} available flavors. You can choose up to 4 flavors.`);if(t.includes("size"))return addBot("Cold Brews and Carnival Lemonade have Large and XL options; other drinks use the size listed on the menu.");if(t.includes("order")||t.includes("drink")||t.includes("coffee")){addBot("Absolutely — opening the order form now.");setTimeout(startOrder,350);return}if(t.includes("milk"))return addBot(`Available milk choices are ${MENU.milks.filter(x=>x.available).map(x=>milkLabel(x.name)).join(", ")}.`);addBot("I can help with the menu, flavors, milk choices, delivery, prices, or placing an order.")}
+</script>
 </body></html>
