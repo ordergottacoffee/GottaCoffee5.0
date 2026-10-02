@@ -47,23 +47,26 @@ input,select,textarea{width:100%;padding:12px;border:1px solid #bbb;border-radiu
 .success-card{text-align:center;padding:8px 0}.success-icon{font-size:3.3rem;margin-bottom:5px}.success-card h2{font-size:1.8rem;margin-bottom:8px}.success-date{background:#fff;border:1px solid #eadcc3;border-radius:16px;padding:15px;margin:18px 0;font-size:1.08rem}
 .success-note{color:#66584e;line-height:1.5}
 @media(max-width:620px){.order-paths{grid-template-columns:1fr}.secondary-actions{grid-template-columns:1fr}.order-path{min-height:150px}}
-@media(max-width:520px){.home-grid{grid-template-columns:1fr}.hero-card,.panel,.chat-card{padding:17px}}</style></head>
+.site-announcement-wrap{width:min(760px,calc(100% - 14px));margin:0 auto 14px}.announcement-card{border-radius:20px;padding:18px 20px;border:1px solid #ddd;box-shadow:0 5px 18px #0000000f;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}.announcement-card.FEATURE{background:#fff7e8;border-color:#efd9ac}.announcement-card.NOTICE{background:#eef7ff;border-color:#bdd8ee}.announcement-card.ALERT{background:#fff0ef;border-color:#e7b3ae}.announcement-tag{font-size:.75rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#8b5539;margin-bottom:6px}.announcement-card h2{margin:0 0 6px;font-size:1.35rem}.announcement-card p{margin:0;color:#554d47;line-height:1.45}.announcement-card img{width:125px;height:100px;object-fit:cover;border-radius:14px;border:1px solid #ddd}.announcement-button{display:inline-block;margin-top:12px;padding:10px 14px;border-radius:10px;background:#111;color:#fff!important;text-decoration:none;font-weight:900;border:0}.munchies-path{background:#f5fbef;border:1px solid #cfe2bc}.munchie-card{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:16px;border:1px solid #d7e5c9;border-radius:16px;background:#fff;margin:10px 0}.munchie-card img{width:112px;height:112px;object-fit:cover;border-radius:14px;border:1px solid #ddd}.munchie-meta{color:#666;font-size:.92rem;margin-top:5px}.munchie-category{font-size:.76rem;text-transform:uppercase;letter-spacing:.1em;font-weight:900;color:#5c7b43}.cart-badge{display:inline-block;background:#111;color:#fff;border-radius:99px;padding:4px 9px;font-size:.78rem;margin-left:6px}.payment-box{background:#f6efff;border:1px solid #cfb6e8;border-radius:16px;padding:16px;margin:16px 0;text-align:center}.payment-box p{margin:0 0 10px;color:#554b5e}.payment-button{display:inline-block;background:#6f3fa0;color:#fff!important;text-decoration:none;font-weight:900;border-radius:12px;padding:12px 18px}.page-announcement{margin-bottom:12px}@media(max-width:620px){.announcement-card{grid-template-columns:1fr}.announcement-card img{width:100%;height:180px}}@media(max-width:520px){.home-grid{grid-template-columns:1fr}.hero-card,.panel,.chat-card{padding:17px}}</style></head>
 <body>
 <header class="site-header"><div class="logo"><span class="blue">GOT</span><span class="green">TAC</span><span class="red">OFF</span><span class="yellow">EE</span></div>
 <p>Cold Brews, Iced Drinks & More — Delivered</p></header>
+<div id="homeAnnouncement" class="site-announcement-wrap"></div>
 <main class="app-shell">
 <section id="homeView" class="view active"><div class="hero-card">
 <div class="pastry-kicker">Gotta Coffee • Madawaska</div>
 <h1>What sounds good today?</h1>
 <p class="home-intro">Fresh drinks delivered to you, plus made-ahead treats you can preorder for a future delivery date.</p>
 <div class="order-paths">
-<button class="order-path coffee-path" onclick="startOrder()"><span><span class="path-icon">☕</span><strong>ORDER COFFEE</strong><small>Build your favorite drink and choose from today's available delivery times.</small></span><span class="path-action">ORDER NOW →</span></button>
+<button id="coffeeHomeButton" class="order-path coffee-path" onclick="startOrder(true)"><span><span class="path-icon">☕</span><strong>ORDER COFFEE</strong><small>Build your favorite drink and choose from today's available delivery times.</small></span><span class="path-action">ORDER NOW →</span></button>
+<button id="munchiesHomeButton" class="order-path munchies-path" onclick="startMunchies(true)"><span><span class="path-icon">🍪</span><strong>TODAY'S AVAILABLE MUNCHIES</strong><small>See today's food, snacks, and treats and add them to the same cart as your drinks.</small></span><span class="path-action">SEE WHAT'S FRESH →</span></button>
 <button class="order-path pastry-path" onclick="startPastryOrder()"><span><span class="path-icon">🧁</span><strong>PREORDER PASTRIES</strong><small>Choose freshly made treats, customize them, and select an available future delivery date.</small></span><span class="path-action">PREORDER →</span></button>
 </div>
 <div class="secondary-actions"><button onclick="showMenu()">📋 View Menu</button><button onclick="showInfo()">🕐 Delivery Info</button><button onclick="showChat()">💬 Ask a Question</button></div>
 </div></section>
-<section id="orderView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Coffee Order</span></div><div id="orderContent"></div></section>
-<section id="pastryView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Pastry Preorder</span></div><div id="pastryContent"></div></section>
+<section id="orderView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Same-Day Order <span id="coffeeCartBadge"></span></span></div><div id="coffeeAnnouncement" class="page-announcement"></div><div id="orderContent"></div></section>
+<section id="munchiesView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Today's Available Munchies <span id="munchiesCartBadge"></span></span></div><div id="munchiesAnnouncement" class="page-announcement"></div><div id="munchiesContent"></div></section>
+<section id="pastryView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Pastry Preorder</span></div><div id="pastryAnnouncement" class="page-announcement"></div><div id="pastryContent"></div></section>
 <section id="menuView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Menu</span></div><div id="menuContent"></div></section>
 <section id="infoView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Delivery</span></div><div id="infoContent"></div></section>
 <section id="chatView" class="view"><div class="topbar"><button onclick="goHome()">← Home</button><span>Gotta Coffee Assistant</span></div>
@@ -576,6 +579,24 @@ input,select,textarea{width:100%;padding:12px;border:1px solid #bbb;border-radiu
 let cart=[],currentDrink=null,selectedOptions={milk:null,flavors:[],bottom:null,espresso:false,lotus:false,coldFoam:false};
 const $=id=>document.getElementById(id),money=n=>`$${Number(n||0).toFixed(2)}`;
 
+let SITE_CONFIG={announcements:[],payment:{show:false,methodName:"Venmo",buttonTitle:"PAY WITH VENMO",link:"",note:"",deliveryFee:2}};
+function loadSiteConfig(){
+  const callbackName="gottaCoffeeSiteConfigCallback";
+  const old=document.getElementById("gottaCoffeeSiteConfigJsonp");if(old)old.remove();
+  window[callbackName]=function(response){const tag=document.getElementById("gottaCoffeeSiteConfigJsonp");if(tag)tag.remove();if(response&&response.ok&&response.config)SITE_CONFIG=response.config;renderAllAnnouncements();};
+  const script=document.createElement("script");script.id="gottaCoffeeSiteConfigJsonp";script.src=CONFIG.APPS_SCRIPT_URL+"?action=siteConfig&callback="+encodeURIComponent(callbackName)+"&_="+Date.now();script.onerror=function(){script.remove();console.warn("Site settings could not be refreshed.");};document.head.appendChild(script);
+}
+function announcementAction(a){const action=String(a.buttonAction||"NONE").toUpperCase();if(action==="COFFEE")return "startOrder(true)";if(action==="MUNCHIES")return "startMunchies(true)";if(action==="PASTRY")return "startPastryOrder()";if(action==="MENU")return "showMenu()";if(action==="INFO")return "showInfo()";return "";}
+function announcementHtml(location){
+  const a=(SITE_CONFIG.announcements||[]).find(x=>x.show!==false&&String(x.location||"").toUpperCase()===location);if(!a)return "";
+  const style=["FEATURE","NOTICE","ALERT"].includes(String(a.style||"").toUpperCase())?String(a.style).toUpperCase():"FEATURE";
+  let button="";
+  if(a.buttonText){if(String(a.buttonAction||"").toUpperCase()==="URL"&&a.buttonUrl){button=`<a class="announcement-button" href="${escapeHtml(a.buttonUrl)}" target="_blank" rel="noopener">${escapeHtml(a.buttonText)} →</a>`;}else{const action=announcementAction(a);if(action)button=`<button class="announcement-button" type="button" onclick="${action}">${escapeHtml(a.buttonText)} →</button>`;}}
+  return `<div class="announcement-card ${style}"><div>${a.tag?`<div class="announcement-tag">${escapeHtml(a.tag)}</div>`:""}${a.headline?`<h2>${escapeHtml(a.headline)}</h2>`:""}${a.message?`<p>${escapeHtml(a.message)}</p>`:""}${button}</div>${a.imageUrl?`<img src="${escapeHtml(a.imageUrl)}" alt="${escapeHtml(a.headline||"Gotta Coffee announcement")}" onerror="this.style.display='none'">`:""}</div>`;
+}
+function renderAllAnnouncements(){const map={HOME:"homeAnnouncement",COFFEE:"coffeeAnnouncement",MUNCHIES:"munchiesAnnouncement",PASTRY:"pastryAnnouncement"};Object.entries(map).forEach(([location,id])=>{const el=$(id);if(el)el.innerHTML=announcementHtml(location);});}
+function paymentBoxHtml(selectedPayment){const p=SITE_CONFIG.payment||{};if(!p.show||!p.link)return "";if(selectedPayment&&p.methodName&&selectedPayment!==p.methodName)return "";return `<div class="payment-box">${p.note?`<p>${escapeHtml(p.note)}</p>`:""}<a class="payment-button" href="${escapeHtml(p.link)}" target="_blank" rel="noopener">${escapeHtml(p.buttonTitle||"PAY ONLINE")} →</a></div>`;}
+
 let LIVE_MENU_READY=false;
 let LIVE_MENU_REFRESHING=false;
 let LIVE_MENU_WAITERS=[];
@@ -595,6 +616,9 @@ function applyLiveMenu(live){
   const waiters=[...LIVE_MENU_WAITERS];
   LIVE_MENU_WAITERS=[];
   waiters.forEach(fn=>{try{fn(true)}catch(err){console.error(err)}});
+  const coffeeBtn=$("coffeeHomeButton"),munchBtn=$("munchiesHomeButton");
+  if(coffeeBtn)coffeeBtn.style.display=MENU.business.showCoffee===false?"none":"";
+  if(munchBtn)munchBtn.style.display=MENU.business.showMunchies===false?"none":"";
   setLiveMenuStatus("Today's menu is ready.");
   console.log("Gotta Coffee live menu loaded.",live.updatedAt||"");
 }
@@ -684,7 +708,7 @@ function refreshLiveMenu(callback){
   requestLiveMenuFromServer();
 }
 
-document.addEventListener("DOMContentLoaded",()=>refreshLiveMenu());
+document.addEventListener("DOMContentLoaded",()=>{loadSiteConfig();refreshLiveMenu();});
 
 function showView(id){document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$(id).classList.add("active");scrollTo(0,0)}
 function goHome(){showView("homeView")}
@@ -694,9 +718,10 @@ function renderOrderingClosed(){
 function renderLiveMenuError(targetId){
   $(targetId).innerHTML=`<div class="panel"><h2>We couldn't refresh the current menu</h2><div class="notice">Please tap Retry so we can load today's prices and available options directly from Gotta Coffee.</div><div class="actions"><button class="primary" onclick="${targetId==='orderContent'?'startOrder()':targetId==='menuContent'?'showMenu()':'showInfo()'}">Retry</button><button onclick="goHome()">Home</button></div></div>`;
 }
-function startOrder(){
-  cart=[];
+function startOrder(resetCart=false){
+  if(resetCart)cart=[];
   showView("orderView");
+  renderAllAnnouncements();
   $("orderContent").innerHTML=`<div class="panel"><h2>Loading today's menu… ☕</h2><div class="notice" data-live-menu-status>Checking current prices and available options.</div></div>`;
   refreshLiveMenu(ok=>{
     if(!ok)return renderLiveMenuError("orderContent");
@@ -719,9 +744,25 @@ function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;",
 function jsq(s){return String(s).replace(/\\/g,"\\\\").replace(/'/g,"\\'")}
 function availableDrinks(){return MENU.drinks.filter(d=>d.available)}
 function milkLabel(name){return String(name)==="0.02"?"2%":String(name)}
-function renderDrinkPicker(){let h=`<div class="panel"><h2>What would you like?</h2><div class="choices">`;
+function renderDrinkPicker(){renderAllAnnouncements();updateCartBadges();let h=`<div class="panel"><h2>What would you like?</h2><div class="choices">`;
 availableDrinks().forEach(d=>h+=`<button class="choice" onclick='chooseDrink(${JSON.stringify(d).replace(/'/g,"&#39;")})'><span><strong>${escapeHtml(d.sourceName)}</strong><small>${escapeHtml(d.description)}</small></span><span class="price">${money(d.price)}</span></button>`);
-h+=`</div><div class="notice">🚗 Delivery orders must be at least <strong>${money(MENU.business.deliveryMinimum)}</strong> before delivery fees.</div></div>`;$("orderContent").innerHTML=h}
+h+=`</div><div class="notice">🚗 Delivery orders must be at least <strong>${money(MENU.business.deliveryMinimum)}</strong> before delivery fees.</div><div class="actions"><button onclick="startMunchies(false)">🍪 Add Munchies</button>${cart.length?`<button class="primary" onclick="renderCart()">🛒 View Order (${cartItemCount()})</button>`:""}</div></div>`;$("orderContent").innerHTML=h}
+function availableMunchies(){return (MENU.foods||[]).filter(f=>f.available)}
+function startMunchies(resetCart=false){
+  if(resetCart)cart=[];
+  showView("munchiesView");renderAllAnnouncements();
+  $("munchiesContent").innerHTML=`<div class="panel"><h2>Loading today's munchies… 🍪</h2><div class="notice" data-live-menu-status>Checking what's available right now.</div></div>`;
+  refreshLiveMenu(ok=>{if(!ok){$("munchiesContent").innerHTML=`<div class="panel"><h2>We couldn't refresh today's munchies</h2><div class="notice">Please tap Retry to load the current food selection.</div><div class="actions"><button class="primary" onclick="startMunchies(false)">Retry</button><button onclick="goHome()">Home</button></div></div>`;return;}if(MENU.business&&MENU.business.orderingOpen===false)return renderMunchiesClosed();if(MENU.business&&MENU.business.showMunchies===false){$("munchiesContent").innerHTML=`<div class="panel"><h2>🍪 Munchies are taking a break</h2><div class="notice">Today's food ordering is currently unavailable.</div><div class="actions"><button onclick="goHome()">← Home</button></div></div>`;return;}renderMunchiesPicker();});
+}
+function renderMunchiesClosed(){$("munchiesContent").innerHTML=`<div class="panel"><h2>🍪 Ordering is currently closed</h2><div class="notice">${escapeHtml(MENU.business.closedMessage||"Ordering is currently closed. Please check back later!")}</div><div class="actions"><button onclick="goHome()">← Home</button></div></div>`;}
+function renderMunchiesPicker(){
+  updateCartBadges();const foods=availableMunchies();let h=`<div class="panel"><div class="pastry-kicker">Fresh & available today</div><h2>🍪 Today's Available Munchies</h2><p class="pastry-lead">Add food to the same cart as your coffee. One order, one delivery.</p>`;
+  if(!foods.length)h+=`<div class="notice">No munchies are marked available right now. Check back soon!</div>`;
+  else foods.forEach((f,n)=>{h+=`<div class="munchie-card"><div>${f.category?`<div class="munchie-category">${escapeHtml(f.category)}</div>`:""}<strong>${escapeHtml(f.name)}</strong>${f.description?`<div class="munchie-meta">${escapeHtml(f.description)}</div>`:""}<div class="price" style="margin-top:8px">${money(f.price)}</div>${f.maxQuantity>0?`<div class="munchie-meta">Maximum ${f.maxQuantity} per order</div>`:""}<div class="qty-row"><label style="margin:0">Qty</label><input id="munchieQty${n}" type="number" min="1" ${f.maxQuantity>0?`max="${f.maxQuantity}"`:""} value="1"></div><label>Special instructions <small>(optional)</small></label><input id="munchieNote${n}" placeholder="Anything we should know?"><button class="primary" style="margin-top:10px" onclick="addMunchieByIndex(${n})">Add to Order →</button></div>${f.imageUrl?`<img src="${escapeHtml(f.imageUrl)}" alt="${escapeHtml(f.name)}" onerror="this.style.display='none'">`:""}</div>`;});
+  h+=`<div class="actions"><button onclick="startOrder(false)">☕ Shop Coffee</button>${cart.length?`<button class="primary" onclick="renderCart()">🛒 View Order (${cartItemCount()})</button>`:""}</div></div>`;$("munchiesContent").innerHTML=h;
+}
+function addMunchieByIndex(n){const f=availableMunchies()[n];if(!f)return;let qty=Math.max(1,Math.floor(Number($("munchieQty"+n)?.value||1)));if(f.maxQuantity>0)qty=Math.min(qty,f.maxQuantity);const notes=$("munchieNote"+n)?.value.trim()||"";cart.push({itemType:"food",sourceName:f.name,name:f.name,description:f.description||"",category:f.category||"",price:Number(f.price||0),quantity:qty,notes:notes,itemPrice:Number(f.price||0)*qty});renderCart();}
+
 function chooseDrink(d){currentDrink={...d};selectedOptions={milk:null,flavors:[],bottom:null,espresso:false,lotus:false,coldFoam:false};renderDrinkOptions()}
 function renderDrinkOptions(){const d=currentDrink;let h=`<div class="panel"><h2>${escapeHtml(d.sourceName)}</h2><p>${escapeHtml(d.description)}</p>`;
 h+=`<div class="option-group"><h3>Milk</h3><div class="choices">`;MENU.milks.filter(x=>x.available).forEach(m=>{const label=milkLabel(m.name);h+=`<button class="choice ${selectedOptions.milk===label?"selected":""}" onclick="selectMilk('${jsq(label)}')">${escapeHtml(label)}</button>`});h+=`</div></div>`;
@@ -733,10 +774,15 @@ function selectMilk(v){selectedOptions.milk=v;renderDrinkOptions()} function sel
 function toggleFlavor(v){let i=selectedOptions.flavors.indexOf(v);if(i>=0)selectedOptions.flavors.splice(i,1);else if(selectedOptions.flavors.length<4)selectedOptions.flavors.push(v);else alert("You can choose up to 4 flavors.");renderDrinkOptions()}
 function toggleAddon(k){selectedOptions[k]=!selectedOptions[k];renderDrinkOptions()}
 function addonPrice(k){let a=MENU.addons.find(x=>(k==="espresso"&&x.name.toLowerCase().includes("espresso"))||(k==="lotus"&&x.name.toLowerCase().includes("lotus"))||(k==="coldFoam"&&x.name.toLowerCase().includes("foam")));return a?.price||0}
-function addCurrentDrink(){let notes=$("drinkNotes")?.value||"";cart.push({...currentDrink,milk:selectedOptions.milk,flavors:[...selectedOptions.flavors],bottom:selectedOptions.bottom,espresso:selectedOptions.espresso,lotus:selectedOptions.lotus,coldFoam:selectedOptions.coldFoam,notes,itemPrice:currentDrink.price+(selectedOptions.espresso?addonPrice("espresso"):0)+(selectedOptions.lotus?addonPrice("lotus"):0)+(selectedOptions.coldFoam?addonPrice("coldFoam"):0)});renderCart()}
-function cartSubtotal(){return cart.reduce((s,i)=>s+i.itemPrice,0)}
-function renderCart(){let h=`<div class="panel"><h2>Your Order</h2>`;cart.forEach((i,n)=>{h+=`<div class="summary"><div class="summary-row"><strong>${escapeHtml(i.sourceName)}</strong><strong>${money(i.itemPrice)}</strong></div>${i.milk?`<div>${escapeHtml(i.milk)}</div>`:""}${i.flavors.length?`<div>Flavors: ${i.flavors.map(escapeHtml).join(", ")}</div>`:""}${i.bottom?`<div>Bottom: ${escapeHtml(i.bottom)}</div>`:""}${i.espresso?`<div>Double espresso</div>`:""}${i.lotus?`<div>Lotus shot</div>`:""}${i.coldFoam?`<div>Cold foam</div>`:""}${i.notes?`<div>Notes: ${escapeHtml(i.notes)}</div>`:""}<button class="danger" onclick="removeItem(${n})">Remove</button></div>`});
-let sub=cartSubtotal();h+=`<div class="summary"><div class="summary-row"><span>Subtotal</span><strong>${money(sub)}</strong></div></div><div class="actions"><button onclick="renderDrinkPicker()">+ Add another</button><button class="primary" ${cart.length?"":"disabled"} onclick="checkout()">Checkout →</button></div></div>`;$("orderContent").innerHTML=h}
+function addCurrentDrink(){let notes=$("drinkNotes")?.value||"";cart.push({...currentDrink,itemType:"drink",quantity:1,milk:selectedOptions.milk,flavors:[...selectedOptions.flavors],bottom:selectedOptions.bottom,espresso:selectedOptions.espresso,lotus:selectedOptions.lotus,coldFoam:selectedOptions.coldFoam,notes,itemPrice:currentDrink.price+(selectedOptions.espresso?addonPrice("espresso"):0)+(selectedOptions.lotus?addonPrice("lotus"):0)+(selectedOptions.coldFoam?addonPrice("coldFoam"):0)});renderCart()}
+function cartSubtotal(){return cart.reduce((s,i)=>s+Number(i.itemPrice||0),0)}
+function cartItemCount(){return cart.reduce((s,i)=>s+Math.max(1,Number(i.quantity||1)),0)}
+function updateCartBadges(){const count=cartItemCount();["coffeeCartBadge","munchiesCartBadge"].forEach(id=>{const el=$(id);if(el)el.innerHTML=count?`<span class="cart-badge">🛒 ${count}</span>`:"";});}
+function renderCart(){
+  showView("orderView");renderAllAnnouncements();updateCartBadges();let h=`<div class="panel"><h2>Your Same-Day Order</h2><p class="home-intro" style="margin:0 0 14px">Coffee and today's munchies travel together in one cart, one checkout, and one delivery.</p>`;
+  cart.forEach((i,n)=>{const isFood=i.itemType==="food";const label=isFood?`${i.quantity||1} × ${escapeHtml(i.sourceName||i.name)}`:escapeHtml(i.sourceName||i.name);h+=`<div class="summary"><div class="summary-row"><strong>${isFood?"🍪":"☕"} ${label}</strong><strong>${money(i.itemPrice)}</strong></div>${!isFood&&i.milk?`<div>${escapeHtml(i.milk)}</div>`:""}${!isFood&&i.flavors?.length?`<div>Flavors: ${i.flavors.map(escapeHtml).join(", ")}</div>`:""}${!isFood&&i.bottom?`<div>Bottom: ${escapeHtml(i.bottom)}</div>`:""}${!isFood&&i.espresso?`<div>Double espresso</div>`:""}${!isFood&&i.lotus?`<div>Lotus shot</div>`:""}${!isFood&&i.coldFoam?`<div>Cold foam</div>`:""}${i.notes?`<div>Notes: ${escapeHtml(i.notes)}</div>`:""}<button class="danger" onclick="removeItem(${n})">Remove</button></div>`;});
+  const sub=cartSubtotal();h+=`<div class="summary"><div class="summary-row"><span>Subtotal</span><strong>${money(sub)}</strong></div></div><div class="actions"><button onclick="startOrder(false)">☕ Add Coffee</button><button onclick="startMunchies(false)">🍪 Add Munchies</button><button class="primary" ${cart.length?"":"disabled"} onclick="checkout()">Checkout →</button></div></div>`;$("orderContent").innerHTML=h;
+}
 function removeItem(i){cart.splice(i,1);renderCart()} function checkout(){let s=cartSubtotal();if(s<MENU.business.deliveryMinimum){alert(`Delivery minimum is ${money(MENU.business.deliveryMinimum)}. Add ${money(MENU.business.deliveryMinimum-s)} more.`);return}renderCheckout()}
 function renderCheckout(){
   if(MENU.business && MENU.business.orderingOpen===false){startOrder();return}
@@ -746,14 +792,14 @@ function renderCheckout(){
   if(!towns.length){$("orderContent").innerHTML=`<div class="panel"><h2>Delivery unavailable</h2><div class="notice">No delivery towns are currently available. Please check back later.</div><div class="actions"><button onclick="goHome()">← Home</button></div></div>`;return}
   if(!times.length){$("orderContent").innerHTML=`<div class="panel"><h2>Delivery unavailable</h2><div class="notice">No delivery times are currently available. Please check back later.</div><div class="actions"><button onclick="goHome()">← Home</button></div></div>`;return}
   $("orderContent").innerHTML=`<div class="panel"><h2>Delivery & Checkout</h2><div class="notice">Minimum: <strong>${money(MENU.business.deliveryMinimum)}</strong> before fees. Cash delivery is free; Venmo adds ${money(MENU.business.venmoDeliveryFee)}.</div>
-  <label>Name *</label><input id="custName"><label>Phone *</label><input id="custPhone" type="tel"><label>Email *</label><input id="custEmail" type="email" required><label>Delivery town *</label><select id="town" required><option value="">Choose...</option>${towns.map(x=>`<option>${escapeHtml(x)}</option>`).join("")}</select><label>Delivery address *</label><input id="address"><label>Delivery time *</label><select id="deliveryTime" required><option value="">Choose...</option>${times.map(x=>`<option>${escapeHtml(x)}</option>`).join("")}</select><label>Payment *</label><select id="payment"><option value="">Choose...</option><option>Cash</option><option>Venmo</option></select>
-  <div class="notice payment-instructions">Your total is calculated below. If paying cash, change is available up to $50. If paying Venmo, the link is available by clicking the purple neon Venmo on the previous page, or I can send it to your email/text. By placing this sovereign food order, I understand that I will be responsible for payment upon delivery. Reach out to <strong>ordergottacoffee@gmail.com</strong>!</div>
+  <label>Name *</label><input id="custName"><label>Phone *</label><input id="custPhone" type="tel"><label>Email *</label><input id="custEmail" type="email" required><label>Delivery town *</label><select id="town" required><option value="">Choose...</option>${towns.map(x=>`<option>${escapeHtml(x)}</option>`).join("")}</select><label>Delivery address *</label><input id="address"><label>Delivery time *</label><select id="deliveryTime" required><option value="">Choose...</option>${times.map(x=>`<option>${escapeHtml(x)}</option>`).join("")}</select><label>Payment *</label><select id="payment"><option value="">Choose...</option><option>Cash</option><option>${escapeHtml(MENU.business.paymentMethodName||SITE_CONFIG.payment.methodName||"Venmo")}</option></select>
+  <div class="notice payment-instructions">Your total is calculated below. If paying cash, change is available up to $50. By placing this order, I understand that I will be responsible for payment upon delivery. Reach out to <strong>ordergottacoffee@gmail.com</strong>!</div><div id="sameDayPayLink"></div>
   <label>Order notes</label><textarea id="orderNotes"></textarea>
   <div class="summary"><div class="summary-row"><span>Subtotal</span><strong>${money(s)}</strong></div><div class="summary-row"><span>Delivery</span><strong id="deliveryFee">${money(0)}</strong></div><div class="summary-row total"><span>Total</span><strong id="checkoutTotal">${money(s)}</strong></div></div><div class="actions"><button onclick="renderCart()">← Back</button><button class="primary" onclick="submitOrder()">Place Order</button></div></div>`;
-  $("payment").onchange=updateCheckoutTotal;
+  $("payment").onchange=updateCheckoutTotal;updateCheckoutTotal();
 }
 
-function updateCheckoutTotal(){let f=$("payment").value==="Venmo"?MENU.business.venmoDeliveryFee:0;$("deliveryFee").textContent=money(f);$("checkoutTotal").textContent=money(cartSubtotal()+f)}
+function updateCheckoutTotal(){const method=MENU.business.paymentMethodName||SITE_CONFIG.payment.methodName||"Venmo";let f=$("payment").value===method?Number(MENU.business.venmoDeliveryFee||0):0;$("deliveryFee").textContent=money(f);$("checkoutTotal").textContent=money(cartSubtotal()+f);const box=$("sameDayPayLink");if(box)box.innerHTML=paymentBoxHtml($("payment").value)}
 function postOrderViaForm(order){
 let frame=$("gcOrderSubmitFrame");
 if(!frame){
@@ -781,7 +827,7 @@ setTimeout(()=>form.remove(),1500);
 }
 
 async function submitOrder(){
-let p=$("payment").value,s=cartSubtotal(),email=$("custEmail").value.trim(),d={customer:{name:$("custName").value.trim(),phone:$("custPhone").value.trim(),email},delivery:{town:$("town").value,address:$("address").value.trim(),time:$("deliveryTime").value},payment:p,notes:$("orderNotes").value.trim(),items:cart.map(i=>({sourceName:i.sourceName,name:i.name,size:i.size,price:i.price,itemPrice:i.itemPrice,milk:i.milk,flavors:i.flavors,bottom:i.bottom,espresso:i.espresso,lotus:i.lotus,coldFoam:i.coldFoam,notes:i.notes})),subtotal:s,deliveryFee:p==="Venmo"?MENU.business.venmoDeliveryFee:0,total:s+(p==="Venmo"?MENU.business.venmoDeliveryFee:0),submittedAt:new Date().toISOString()};
+let p=$("payment").value,s=cartSubtotal(),email=$("custEmail").value.trim(),d={customer:{name:$("custName").value.trim(),phone:$("custPhone").value.trim(),email},delivery:{town:$("town").value,address:$("address").value.trim(),time:$("deliveryTime").value},payment:p,notes:$("orderNotes").value.trim(),items:cart.map(i=>({...i})),subtotal:s,deliveryFee:p===(MENU.business.paymentMethodName||SITE_CONFIG.payment.methodName||"Venmo")?Number(MENU.business.venmoDeliveryFee||0):0,total:s+(p===(MENU.business.paymentMethodName||SITE_CONFIG.payment.methodName||"Venmo")?Number(MENU.business.venmoDeliveryFee||0):0),submittedAt:new Date().toISOString()};
 
 if(!d.customer.name||!d.customer.phone||!d.customer.email||!d.delivery.town||!d.delivery.address||!d.delivery.time||!p){alert("Please complete all required fields, including delivery time and email.");return}
 if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.customer.email)){alert("Please enter a valid email address.");return}
@@ -797,8 +843,8 @@ console.error("Gotta Coffee order submission failed:",e);
 alert(`The order could not be sent automatically.\n\nTechnical detail: ${e.message||e}`);
 }
 }
-function showConfirmation(d,n){$("orderContent").innerHTML=`<div class="panel"><h2>☕ Order Received!</h2><div class="notice"><strong>Order #${escapeHtml(n)}</strong></div><p>Thanks, ${escapeHtml(d.customer.name)}! We received your order.</p><div class="summary">${d.items.map(i=>`<div class="summary-row"><span>${escapeHtml(i.sourceName)}</span><strong>${money(i.itemPrice)}</strong></div>`).join("")}<div class="summary-row"><span>Delivery</span><span>${money(d.deliveryFee)}</span></div><div class="summary-row total"><span>Total</span><strong>${money(d.total)}</strong></div></div><p>Delivery time: <strong>${escapeHtml(d.delivery.time)}</strong></p><p>Payment: <strong>${escapeHtml(d.payment)}</strong></p><div class="actions"><button onclick="goHome()">Done</button><button onclick="startOrder()">New Order</button></div></div>`;cart=[]}
-function renderMenu(){let h=`<div class="panel"><h2>Drinks</h2>`;availableDrinks().forEach(d=>h+=`<div class="menu-item"><h3>${escapeHtml(d.sourceName)} <span class="price">${money(d.price)}</span></h3><p>${escapeHtml(d.description)}</p></div>`);h+=`<h2>Milk Choices</h2><div class="chips">${MENU.milks.filter(x=>x.available).map(x=>`<span class="chip">${escapeHtml(milkLabel(x.name))}</span>`).join("")}</div><h2>Flavors</h2><div class="chips">${MENU.flavors.filter(x=>x.available).map(x=>`<span class="chip">${escapeHtml(x.name)}</span>`).join("")}</div><h2>Add-ons</h2>`;MENU.addons.filter(x=>x.available).forEach(x=>h+=`<div class="menu-item"><strong>${escapeHtml(x.name)}</strong> <span class="price">+${money(x.price)}</span></div>`);h+=`</div>`;$("menuContent").innerHTML=h}
+function showConfirmation(d,n){$("orderContent").innerHTML=`<div class="panel"><div class="success-card"><div class="success-icon">☕🍪</div><h2>Your order is in!</h2><p>Thanks, ${escapeHtml(d.customer.name)}! Your official order number and full details are being sent to your email.</p></div><div class="summary">${d.items.map(i=>`<div class="summary-row"><span>${i.itemType==="food"?`${i.quantity||1} × `:""}${escapeHtml(i.sourceName||i.name)}</span><strong>${money(i.itemPrice)}</strong></div>`).join("")}<div class="summary-row"><span>Delivery</span><span>${money(d.deliveryFee)}</span></div><div class="summary-row total"><span>Total</span><strong>${money(d.total)}</strong></div></div><p>Delivery time: <strong>${escapeHtml(d.delivery.time)}</strong></p><p>Payment: <strong>${escapeHtml(d.payment)}</strong></p>${paymentBoxHtml(d.payment)}<div class="actions"><button onclick="goHome()">Done</button><button onclick="startOrder(true)">New Same-Day Order</button></div></div>`;cart=[];updateCartBadges()}
+function renderMenu(){let h=`<div class="panel"><h2>Drinks</h2>`;availableDrinks().forEach(d=>h+=`<div class="menu-item"><h3>${escapeHtml(d.sourceName)} <span class="price">${money(d.price)}</span></h3><p>${escapeHtml(d.description)}</p></div>`);const foods=availableMunchies();if(foods.length){h+=`<h2>Today's Available Munchies</h2>`;foods.forEach(f=>h+=`<div class="menu-item"><h3>${escapeHtml(f.name)} <span class="price">${money(f.price)}</span></h3>${f.description?`<p>${escapeHtml(f.description)}</p>`:""}</div>`)}h+=`<h2>Milk Choices</h2><div class="chips">${MENU.milks.filter(x=>x.available).map(x=>`<span class="chip">${escapeHtml(milkLabel(x.name))}</span>`).join("")}</div><h2>Flavors</h2><div class="chips">${MENU.flavors.filter(x=>x.available).map(x=>`<span class="chip">${escapeHtml(x.name)}</span>`).join("")}</div><h2>Add-ons</h2>`;MENU.addons.filter(x=>x.available).forEach(x=>h+=`<div class="menu-item"><strong>${escapeHtml(x.name)}</strong> <span class="price">+${money(x.price)}</span></div>`);h+=`</div>`;$("menuContent").innerHTML=h}
 function renderInfo(){
   const towns=Object.keys(MENU.business.areas||{});
   const times=Array.isArray(MENU.business.deliveryTimes)?MENU.business.deliveryTimes:[];
@@ -818,6 +864,7 @@ let pastrySelections={quantity:1,addons:[],substitutions:[],notes:""};
 function startPastryOrder(){
   pastryCart=[];
   showView("pastryView");
+  renderAllAnnouncements();
   $("pastryContent").innerHTML=`<div class="panel"><h2>Loading pastry preorders… 🧁</h2><div class="notice">Checking available desserts, dates, and delivery times.</div></div>`;
 
   const callbackName="gottaCoffeePastryMenuCallback";
@@ -1018,7 +1065,7 @@ function renderPastryCheckout(){
   <label>Email *</label><input id="pastryCustEmail" type="email" autocomplete="email" required>
   <label>Delivery town *</label><select id="pastryTown" required><option value="">Choose...</option>${towns.map(x=>`<option>${escapeHtml(x)}</option>`).join("")}</select>
   <label>Delivery address *</label><input id="pastryAddress" autocomplete="street-address"></div>
-  <div class="bakery-section"><h3>💵 Payment</h3><label>Payment method *</label><select id="pastryPayment" onchange="updatePastryCheckoutTotal()"><option value="">Choose...</option><option>Cash</option><option>Venmo</option></select>
+  <div class="bakery-section"><h3>💵 Payment</h3><label>Payment method *</label><select id="pastryPayment" onchange="updatePastryCheckoutTotal()"><option value="">Choose...</option><option>Cash</option><option>${escapeHtml(MENU.business.paymentMethodName||SITE_CONFIG.payment.methodName||"Venmo")}</option></select>
   <label>Order notes <small>(optional)</small></label><textarea id="pastryOrderNotes" placeholder="Anything else we should know about the overall order?"></textarea></div>
   <div class="notice">We'll re-check your selected date and time when the preorder is submitted so a slot that has become unavailable can't be accepted accidentally.</div>
   <div class="summary pastry-total-box"><div class="summary-row"><span>Subtotal</span><strong>${money(sub)}</strong></div><div class="summary-row"><span>Delivery</span><strong id="pastryDeliveryFee">${money(0)}</strong></div><div class="summary-row total"><span>Total</span><strong id="pastryCheckoutTotal">${money(sub)}</strong></div></div>
@@ -1036,7 +1083,7 @@ function updatePastryTimes(){
 
 function pastryDeliveryFee(){
   // Match the current coffee payment rule unless/until a pastry-specific fee is added.
-  return $("pastryPayment")?.value==="Venmo"?Number(MENU.business.venmoDeliveryFee||2):0;
+  const method=MENU.business.paymentMethodName||SITE_CONFIG.payment.methodName||"Venmo";return $("pastryPayment")?.value===method?Number(MENU.business.venmoDeliveryFee||0):0;
 }
 
 function updatePastryCheckoutTotal(){
@@ -1100,7 +1147,7 @@ function formatPastryDateForCustomer(dateKey){
 
 function showPastryConfirmation(d,n){
   const prettyDate=formatPastryDateForCustomer(d.delivery.date);
-  $("pastryContent").innerHTML=`<div class="panel"><div class="success-card"><div class="success-icon">🧁</div><div class="pastry-kicker">Preorder received</div><h2>Your preorder is in!</h2><p class="success-note">Thanks, ${escapeHtml(d.customer.name)}! We've received your preorder. Your official order number and full details are being sent to your email.</p><div class="success-date"><strong>${escapeHtml(prettyDate)}</strong><br>${escapeHtml(d.delivery.time)}</div></div><div class="summary pastry-total-box">${d.items.map(i=>`<div class="summary-row"><span>${i.quantity} × ${escapeHtml(i.dessert)}</span><strong>${money(i.itemPrice)}</strong></div>`).join("")}<div class="summary-row"><span>Delivery</span><span>${money(d.deliveryFee)}</span></div><div class="summary-row total"><span>Total</span><strong>${money(d.total)}</strong></div></div><p class="success-note" style="text-align:center">Payment: <strong>${escapeHtml(d.payment)}</strong><br>We'll see you then! 💛</p><div class="actions"><button onclick="goHome()">Done</button><button class="primary" onclick="startPastryOrder()">Start Another Preorder</button></div></div>`;
+  $("pastryContent").innerHTML=`<div class="panel"><div class="success-card"><div class="success-icon">🧁</div><div class="pastry-kicker">Preorder received</div><h2>Your preorder is in!</h2><p class="success-note">Thanks, ${escapeHtml(d.customer.name)}! We've received your preorder. Your official order number and full details are being sent to your email.</p><div class="success-date"><strong>${escapeHtml(prettyDate)}</strong><br>${escapeHtml(d.delivery.time)}</div></div><div class="summary pastry-total-box">${d.items.map(i=>`<div class="summary-row"><span>${i.quantity} × ${escapeHtml(i.dessert)}</span><strong>${money(i.itemPrice)}</strong></div>`).join("")}<div class="summary-row"><span>Delivery</span><span>${money(d.deliveryFee)}</span></div><div class="summary-row total"><span>Total</span><strong>${money(d.total)}</strong></div></div><p class="success-note" style="text-align:center">Payment: <strong>${escapeHtml(d.payment)}</strong><br>We'll see you then! 💛</p>${paymentBoxHtml(d.payment)}<div class="actions"><button onclick="goHome()">Done</button><button class="primary" onclick="startPastryOrder()">Start Another Preorder</button></div></div>`;
   pastryCart=[];
 }
 
@@ -1110,7 +1157,7 @@ if($("chatMessages").children.length)return;
 addBot("Hi! 👋 I'm the Gotta Coffee assistant. I can answer questions about our menu, flavors, delivery, and ordering.");
 let wrap=document.createElement("div");
 wrap.style.margin="12px 0 18px";
-wrap.innerHTML=`<button class="primary" type="button" onclick="startOrder()">☕ Place an Order</button>`;
+wrap.innerHTML=`<button class="primary" type="button" onclick="startOrder(true)">☕ Place an Order</button>`;
 $("chatMessages").appendChild(wrap);
 }
 function addBubble(t,c){let d=document.createElement("div");d.className=`bubble ${c}`;d.innerHTML=escapeHtml(t).replace(/\n/g,"<br>");$("chatMessages").appendChild(d);$("chatMessages").scrollTop=$("chatMessages").scrollHeight}
